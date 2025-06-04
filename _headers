@@ -1,0 +1,14 @@
+# Headers for API endpoints - Enhanced CORS
+/api/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE
+  Access-Control-Allow-Headers: Content-Type, Authorization, Accept, Origin, X-Requested-With
+  Access-Control-Max-Age: 86400
+  Cache-Control: no-cache, must-revalidate
+  
+# Headers for static assets
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Access-Control-Allow-Origin: * 

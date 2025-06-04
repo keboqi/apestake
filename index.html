@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APE Staking Rewards Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-icons">
+                    <div class="header-icon header-ape-icon"></div>
+                    <div class="header-icon header-bayc-icon"></div>
+                    <div class="header-icon header-mayc-icon"></div>
+                    <div class="header-icon header-bakc-icon"></div>
+                </div>
+                
+                <div class="title-wrapper">
+                    <div class="title-decoration left">🚀</div>
+                    <h1>APE Staking Rewards Calculator</h1>
+                    <div class="title-decoration right">💰</div>
+                </div>
+                
+                <p class="subtitle">Calculate your potential rewards from staking in BAYC, MAYC, BAKC, and $APE pools</p>
+                
+                <div class="stats-preview">
+                    <div class="stat-preview">
+                        <div class="stat-preview-label">$APE APY</div>
+                        <div class="stat-preview-value" id="header-ape-apy">6.5%</div>
+                    </div>
+                    <div class="stat-preview">
+                        <div class="stat-preview-label">BAYC APR</div>
+                        <div class="stat-preview-value" id="header-bayc-apr">63.5%</div>
+                    </div>
+                    <div class="stat-preview">
+                        <div class="stat-preview-label">MAYC APR</div>
+                        <div class="stat-preview-value" id="header-mayc-apr">73.9%</div>
+                    </div>
+                    <div class="stat-preview">
+                        <div class="stat-preview-label">BAKC APR</div>
+                        <div class="stat-preview-value" id="header-bakc-apr">61.9%</div>
+                    </div>
+                    <div class="stat-preview">
+                        <div class="stat-preview-label">APE Price</div>
+                        <div class="stat-preview-value" id="header-ape-price">$0.6830</div>
+                    </div>
+                    <div class="stat-preview">
+                        <div class="stat-preview-label">USD/CNY</div>
+                        <div class="stat-preview-value" id="header-usd-cny">7.1898</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Data Configuration Panel -->
+        <div class="data-config-panel">
+            <h2 class="config-title">📊 Data Configuration</h2>
+            <p class="config-description">Update the latest values manually using the data sources below:</p>
+            
+            <div class="config-grid">
+                <!-- APE Staking Data -->
+                <div class="config-item">
+                    <h3 class="config-item-title">$APE Staking APY</h3>
+                    <div class="config-source">
+                        <a href="https://trackmyyield.xyz/" target="_blank" class="source-link">
+                            📈 Get from trackmyyield.xyz
+                        </a>
+                    </div>
+                    <div class="config-input-group">
+                        <label for="config-ape-apy">APY (%):</label>
+                        <input type="number" id="config-ape-apy" step="0.1" min="0" max="100" placeholder="6.5">
+                    </div>
+                </div>
+                
+                <!-- NFT Staking Data -->
+                <div class="config-item">
+                    <h3 class="config-item-title">NFT Staking Rewards</h3>
+                    <div class="config-source">
+                        <a href="https://apectrl.com/statistics/ape-staking" target="_blank" class="source-link">
+                            🦍 Get from apectrl.com
+                        </a>
+                    </div>
+                    <div class="config-inputs-row">
+                        <div class="config-input-group">
+                            <label for="config-bayc-daily">BAYC Daily (APE):</label>
+                            <input type="number" id="config-bayc-daily" step="0.01" min="0" placeholder="17.56">
+                        </div>
+                        <div class="config-input-group">
+                            <label for="config-mayc-daily">MAYC Daily (APE):</label>
+                            <input type="number" id="config-mayc-daily" step="0.01" min="0" placeholder="4.13">
+                        </div>
+                        <div class="config-input-group">
+                            <label for="config-bakc-daily">BAKC Daily (APE):</label>
+                            <input type="number" id="config-bakc-daily" step="0.01" min="0" placeholder="1.45">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Price Data -->
+                <div class="config-item">
+                    <h3 class="config-item-title">Price Data</h3>
+                    <div class="config-source">
+                        <a href="https://coinmarketcap.com/currencies/apecoin-ape/" target="_blank" class="source-link">
+                            💰 APE Price from CoinMarketCap
+                        </a>
+                        <a href="https://www.bloomberg.com/quote/USDCNY:CUR" target="_blank" class="source-link">
+                            💱 USD/CNY from Bloomberg
+                        </a>
+                    </div>
+                    <div class="config-inputs-row">
+                        <div class="config-input-group">
+                            <label for="config-ape-price">APE Price ($):</label>
+                            <input type="number" id="config-ape-price" step="0.0001" min="0" placeholder="0.6830">
+                        </div>
+                        <div class="config-input-group">
+                            <label for="config-usd-cny">USD/CNY Rate:</label>
+                            <input type="number" id="config-usd-cny" step="0.0001" min="0" placeholder="7.1898">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-actions">
+                <button id="auto-fetch-btn" class="config-button primary">
+                    🚀 Auto-Fetch Live Data
+                </button>
+                <button id="update-data-btn" class="config-button secondary">
+                    💾 Update Manual Data
+                </button>
+                <button id="reset-data-btn" class="config-button tertiary">
+                    🔄 Reset to Defaults
+                </button>
+                <button id="save-defaults-btn" class="config-button quaternary">
+                    ⭐ Save as New Defaults
+                </button>
+            </div>
+            
+            <div class="data-status">
+                <div class="status-item">
+                    <span class="status-label">Data Source:</span>
+                    <span id="data-source-status" class="status-value">Default Values</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Last Updated:</span>
+                    <span id="last-updated-status" class="status-value">Never</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calculator Pools -->
+        <div class="pools">
+            <div class="pool">
+                <div class="pool-header">
+                    <div class="pool-icon ape-icon"></div>
+                    <h2 class="pool-title">$APE Pool</h2>
+                </div>
+                <div class="pool-stats">
+                    <div class="stat">
+                        <span class="stat-label">APY:</span>
+                        <span class="stat-value" id="ape-apy">6.5%</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Daily Rate:</span>
+                        <span class="stat-value" id="ape-daily-rate">0.0178%</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="ape-input">Amount of $APE to stake:</label>
+                    <input type="number" id="ape-input" min="0" value="0" step="0.01" placeholder="Enter APE amount">
+                </div>
+            </div>
+            
+            <div class="pool">
+                <div class="pool-header">
+                    <div class="pool-icon bayc-icon"></div>
+                    <h2 class="pool-title">BAYC Pool</h2>
+                </div>
+                <div class="pool-stats">
+                    <div class="stat">
+                        <span class="stat-label">Daily Rewards per NFT:</span>
+                        <span class="stat-value" id="bayc-daily-rewards">17.56 APE</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">APR:</span>
+                        <span class="stat-value" id="bayc-apr">63.5%</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="bayc-input">Number of BAYC NFTs:</label>
+                    <input type="number" id="bayc-input" min="0" value="0" step="1">
+                </div>
+            </div>
+            
+            <div class="pool">
+                <div class="pool-header">
+                    <div class="pool-icon mayc-icon"></div>
+                    <h2 class="pool-title">MAYC Pool</h2>
+                </div>
+                <div class="pool-stats">
+                    <div class="stat">
+                        <span class="stat-label">Daily Rewards per NFT:</span>
+                        <span class="stat-value" id="mayc-daily-rewards">4.13 APE</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">APR:</span>
+                        <span class="stat-value" id="mayc-apr">73.9%</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="mayc-input">Number of MAYC NFTs:</label>
+                    <input type="number" id="mayc-input" min="0" value="0" step="1">
+                </div>
+            </div>
+            
+            <div class="pool">
+                <div class="pool-header">
+                    <div class="pool-icon bakc-icon"></div>
+                    <h2 class="pool-title">BAKC Pool</h2>
+                </div>
+                <div class="pool-stats">
+                    <div class="stat">
+                        <span class="stat-label">Daily Rewards per NFT:</span>
+                        <span class="stat-value" id="bakc-daily-rewards">1.45 APE</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">APR:</span>
+                        <span class="stat-value" id="bakc-apr">61.9%</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="bakc-input">Number of BAKC NFTs:</label>
+                    <input type="number" id="bakc-input" min="0" value="0" step="1">
+                </div>
+            </div>
+        </div>
+        
+        <button class="button" id="calculate-btn">Calculate Rewards</button>
+        
+        <div class="results" id="results-container" style="display: none;">
+            <div class="result-card">
+                <div class="result-header">Your Estimated APE Rewards</div>
+                
+                <!-- Detailed Pool Breakdown -->
+                <div class="pool-breakdown">
+                    <h3 class="breakdown-title">Rewards Breakdown by Pool</h3>
+                    <div class="breakdown-grid">
+                        <div class="breakdown-item" id="ape-breakdown" style="display: none;">
+                            <div class="breakdown-header">
+                                <div class="breakdown-icon ape-icon"></div>
+                                <div class="breakdown-info">
+                                    <div class="breakdown-pool-name">$APE Pool</div>
+                                    <div class="breakdown-pool-details" id="ape-breakdown-details">0 APE staked</div>
+                                </div>
+                            </div>
+                            <div class="breakdown-rewards">
+                                <div class="breakdown-daily">
+                                    <span class="breakdown-label">Daily:</span>
+                                    <span class="breakdown-value" id="ape-daily-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-monthly">
+                                    <span class="breakdown-label">Monthly:</span>
+                                    <span class="breakdown-value" id="ape-monthly-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-annual">
+                                    <span class="breakdown-label">Annual:</span>
+                                    <span class="breakdown-value" id="ape-annual-breakdown">0 APE</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="breakdown-item" id="bayc-breakdown" style="display: none;">
+                            <div class="breakdown-header">
+                                <div class="breakdown-icon bayc-icon"></div>
+                                <div class="breakdown-info">
+                                    <div class="breakdown-pool-name">BAYC Pool</div>
+                                    <div class="breakdown-pool-details" id="bayc-breakdown-details">0 NFTs staked</div>
+                                </div>
+                            </div>
+                            <div class="breakdown-rewards">
+                                <div class="breakdown-daily">
+                                    <span class="breakdown-label">Daily:</span>
+                                    <span class="breakdown-value" id="bayc-daily-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-monthly">
+                                    <span class="breakdown-label">Monthly:</span>
+                                    <span class="breakdown-value" id="bayc-monthly-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-annual">
+                                    <span class="breakdown-label">Annual:</span>
+                                    <span class="breakdown-value" id="bayc-annual-breakdown">0 APE</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="breakdown-item" id="mayc-breakdown" style="display: none;">
+                            <div class="breakdown-header">
+                                <div class="breakdown-icon mayc-icon"></div>
+                                <div class="breakdown-info">
+                                    <div class="breakdown-pool-name">MAYC Pool</div>
+                                    <div class="breakdown-pool-details" id="mayc-breakdown-details">0 NFTs staked</div>
+                                </div>
+                            </div>
+                            <div class="breakdown-rewards">
+                                <div class="breakdown-daily">
+                                    <span class="breakdown-label">Daily:</span>
+                                    <span class="breakdown-value" id="mayc-daily-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-monthly">
+                                    <span class="breakdown-label">Monthly:</span>
+                                    <span class="breakdown-value" id="mayc-monthly-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-annual">
+                                    <span class="breakdown-label">Annual:</span>
+                                    <span class="breakdown-value" id="mayc-annual-breakdown">0 APE</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="breakdown-item" id="bakc-breakdown" style="display: none;">
+                            <div class="breakdown-header">
+                                <div class="breakdown-icon bakc-icon"></div>
+                                <div class="breakdown-info">
+                                    <div class="breakdown-pool-name">BAKC Pool</div>
+                                    <div class="breakdown-pool-details" id="bakc-breakdown-details">0 NFTs staked</div>
+                                </div>
+                            </div>
+                            <div class="breakdown-rewards">
+                                <div class="breakdown-daily">
+                                    <span class="breakdown-label">Daily:</span>
+                                    <span class="breakdown-value" id="bakc-daily-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-monthly">
+                                    <span class="breakdown-label">Monthly:</span>
+                                    <span class="breakdown-value" id="bakc-monthly-breakdown">0 APE</span>
+                                </div>
+                                <div class="breakdown-annual">
+                                    <span class="breakdown-label">Annual:</span>
+                                    <span class="breakdown-value" id="bakc-annual-breakdown">0 APE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Total Summary -->
+                <div class="total-summary">
+                    <h3 class="summary-title">Total Combined Rewards</h3>
+                    
+                    <!-- Price Information Display -->
+                    <div class="price-info">
+                        <div class="price-item">
+                            <span class="price-label">APE Price:</span>
+                            <span class="price-value" id="display-ape-price">$0.6830</span>
+                        </div>
+                        <div class="price-item">
+                            <span class="price-label">USD/CNY Rate:</span>
+                            <span class="price-value" id="display-usd-cny">7.1898</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Total APE Staked Calculation -->
+                    <div class="total-ape-staked">
+                        <h4 class="ape-staked-title">Total APE Staked</h4>
+                        <div class="ape-staked-breakdown">
+                            <div class="ape-staked-item">
+                                <span class="ape-staked-label">BAYC:</span>
+                                <span class="ape-staked-value" id="bayc-ape-staked">0 APE</span>
+                            </div>
+                            <div class="ape-staked-item">
+                                <span class="ape-staked-label">MAYC:</span>
+                                <span class="ape-staked-value" id="mayc-ape-staked">0 APE</span>
+                            </div>
+                            <div class="ape-staked-item">
+                                <span class="ape-staked-label">BAKC:</span>
+                                <span class="ape-staked-value" id="bakc-ape-staked">0 APE</span>
+                            </div>
+                            <div class="ape-staked-item">
+                                <span class="ape-staked-label">$APE:</span>
+                                <span class="ape-staked-value" id="direct-ape-staked">0 APE</span>
+                            </div>
+                            <div class="ape-staked-total">
+                                <span class="ape-staked-label-total">Total:</span>
+                                <span class="ape-staked-value-total" id="total-ape-staked">0 APE</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="result-label">Daily Rewards</div>
+                            <div class="result-value" id="daily-rewards">0 APE</div>
+                            <div class="result-subvalue">
+                                <div id="daily-usd">$0.00</div>
+                                <div id="daily-cny">¥0.00</div>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Monthly Rewards</div>
+                            <div class="result-value" id="monthly-rewards">0 APE</div>
+                            <div class="result-subvalue">
+                                <div id="monthly-usd">$0.00</div>
+                                <div id="monthly-cny">¥0.00</div>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Annual Rewards</div>
+                            <div class="result-value" id="annual-rewards">0 APE</div>
+                            <div class="result-subvalue">
+                                <div id="annual-usd">$0.00</div>
+                                <div id="annual-cny">¥0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-source">
+            <p><strong>Data Sources:</strong></p>
+            <ul class="source-list">
+                <li><a href="https://apectrl.com/statistics/ape-staking" target="_blank">apectrl.com - NFT Staking Rewards</a></li>
+                <li><a href="https://trackmyyield.xyz/" target="_blank">trackmyyield.xyz - APE Staking APY</a></li>
+                <li><a href="https://coinmarketcap.com/currencies/apecoin-ape/" target="_blank">CoinMarketCap - APE Price</a></li>
+                <li><a href="https://www.bloomberg.com/quote/USDCNY:CUR" target="_blank">Bloomberg - USD/CNY Rate</a></li>
+            </ul>
+            <p><em>Use the Data Configuration panel above to manually update values from these sources.</em></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
