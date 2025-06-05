@@ -273,7 +273,6 @@ async function fetchLiveData() {
     try {
         showNotification('Fetching latest data... 🔄', 'info');
         
-        // Try comprehensive fetch-data API first (uses all real APIs)
         let response = await fetch('/api/fetch-data');
         if (response.ok) {
             const data = await response.json();
@@ -317,223 +316,24 @@ async function fetchLiveData() {
                 }
                 
                 return true;
+            } else {
+                // Handle cases where data.success is false
+                console.error('API request successful, but data.success is false:', data);
+                showNotification('❌ Failed to process live data. API returned an error.', 'error');
+                return false;
             }
+        } else {
+            // Handle non-ok HTTP responses
+            console.error('Failed to fetch live data. Status:', response.status);
+            showNotification(`❌ Failed to fetch live data. Server returned status ${response.status}. Using cached values.`, 'error');
+            return false;
         }
-        
-        // Try simple-fetch as backup if fetch-data fails
-        response = await fetch('/api/simple-fetch');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                const newData = {
-                    ape: { apy: data.apeApy },
-                    bayc: { 
-                        dailyRewardsFull: data.baycDaily,
-                        apr: parseFloat(data.baycApr)
-                    },
-                    mayc: { 
-                        dailyRewardsFull: data.maycDaily,
-                        apr: parseFloat(data.maycApr)
-                    },
-                    bakc: { 
-                        dailyRewardsFull: data.bakcDaily,
-                        apr: parseFloat(data.bakcApr)
-                    },
-                    apePrice: data.apePrice,
-                    usdCnyRate: data.usdCnyRate
-                };
-                
-                currentData = newData;
-                updateConfigInputs();
-                updateAllDisplays();
-                saveDataToLocalStorage(currentData);
-                updateDataStatus(data.dataSource || 'Simple API', new Date().toLocaleString());
-                showNotification('✅ Data updated from backup API!', 'success');
-                
-                if (hasCalculationInputs()) {
-                    calculateRewards();
-                }
-                return true;
-            }
-        }
-        
-        // Fallback to individual API calls
-        return await fetchDataFallback();
         
     } catch (error) {
         console.error('Error fetching live data:', error);
-        showNotification('❌ Failed to fetch live data. Using fallback...', 'warning');
-        return await fetchDataFallback();
-    }
-}
-
-async function fetchDataFallback() {
-    try {
-        const updates = {};
-        let hasUpdates = false;
-        
-        // Try our local API endpoints first to avoid CORS issues
-        try {
-            const localApeResponse = await fetch('/api/ape-staking');
-            if (localApeResponse.ok) {
-                const localApeData = await localApeResponse.json();
-                if (localApeData.success && localApeData.apeApy) {
-                    updates.apeApy = localApeData.apeApy;
-                    hasUpdates = true;
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching from local APE staking API:', error);
-        }
-
-        // Try local NFT staking API
-        try {
-            const localNftResponse = await fetch('/api/nft-staking');
-            if (localNftResponse.ok) {
-                const localNftData = await localNftResponse.json();
-                if (localNftData.bayc || localNftData.mayc || localNftData.bakc) {
-                    if (localNftData.bayc) {
-                        updates.bayc = {
-                            dailyRewardsFull: localNftData.bayc.dailyRewards,
-                            apr: localNftData.bayc.apr
-                        };
-                    }
-                    if (localNftData.mayc) {
-                        updates.mayc = {
-                            dailyRewardsFull: localNftData.mayc.dailyRewards,
-                            apr: localNftData.mayc.apr
-                        };
-                    }
-                    if (localNftData.bakc) {
-                        updates.bakc = {
-                            dailyRewardsFull: localNftData.bakc.dailyRewards,
-                            apr: localNftData.bakc.apr
-                        };
-                    }
-                    hasUpdates = true;
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching from local NFT staking API:', error);
-        }
-
-        // Only try external APIs if local ones failed
-        if (!hasUpdates) {
-            // Fetch APE price from CryptoRates.ai API (CORS-friendly)
-            try {
-                const apeResponse = await fetch('https://cryptorates.ai/v1/get/APE');
-                if (apeResponse.ok) {
-                    const apeData = await apeResponse.json();
-                    if (apeData.price && typeof apeData.price === 'number') {
-                        updates.apePrice = parseFloat(apeData.price.toFixed(4));
-                        hasUpdates = true;
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching APE price from CryptoRates.ai:', error);
-                
-                // Fallback to CoinMarketCap if CryptoRates.ai fails
-                try {
-                    const cmcResponse = await fetch('https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail/lite?id=18876');
-                    if (cmcResponse.ok) {
-                        const cmcData = await cmcResponse.json();
-                        const price = cmcData?.data?.statistics?.price;
-                        if (price && typeof price === 'number') {
-                            updates.apePrice = parseFloat(price.toFixed(4));
-                            hasUpdates = true;
-                        }
-                    }
-                } catch (cmcError) {
-                    console.error('Error fetching APE price from CoinMarketCap fallback:', cmcError);
-                }
-            }
-            
-            // Fetch USD/CNY rate
-            try {
-                const exchangeResponse = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-                if (exchangeResponse.ok) {
-                    const exchangeData = await exchangeResponse.json();
-                    if (exchangeData.rates?.CNY) {
-                        updates.usdCnyRate = exchangeData.rates.CNY;
-                        hasUpdates = true;
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching exchange rate:', error);
-            }
-        }
-        
-        if (hasUpdates) {
-            // Apply updates to current data
-            Object.assign(currentData, updates);
-            
-            // Update UI
-            updateConfigInputs();
-            updateAllDisplays();
-            saveDataToLocalStorage(currentData);
-            
-            updateDataStatus('Partial Live Data', new Date().toLocaleString());
-            showNotification('⚠️ Partial data updated from available sources', 'warning');
-            
-            if (hasCalculationInputs()) {
-                calculateRewards();
-            }
-            
-            return true;
-        }
-        
-        showNotification('❌ Could not fetch any live data. Check your internet connection.', 'error');
-        return false;
-        
-    } catch (error) {
-        console.error('Error in fallback data fetch:', error);
-        showNotification('❌ All data sources unavailable. Using cached values.', 'error');
+        showNotification('❌ Failed to fetch live data. Check your internet connection or server status. Using cached values.', 'error');
         return false;
     }
-}
-
-async function fetchApeStakingData() {
-    try {
-        const response = await fetch('/api/ape-staking');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.apeApy) {
-                currentData.ape.apy = data.apeApy;
-                return data.apeApy;
-            }
-        }
-    } catch (error) {
-        console.error('Error fetching APE staking data:', error);
-    }
-    return null;
-}
-
-async function fetchNftStakingData() {
-    try {
-        const response = await fetch('/api/nft-staking');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success || data.bayc || data.mayc || data.bakc) {
-                // Updated to work with new API response structure
-                if (data.bayc) {
-                    currentData.bayc.dailyRewardsFull = data.bayc.dailyRewards;
-                    currentData.bayc.apr = data.bayc.apr;
-                }
-                if (data.mayc) {
-                    currentData.mayc.dailyRewardsFull = data.mayc.dailyRewards;
-                    currentData.mayc.apr = data.mayc.apr;
-                }
-                if (data.bakc) {
-                    currentData.bakc.dailyRewardsFull = data.bakc.dailyRewards;
-                    currentData.bakc.apr = data.bakc.apr;
-                }
-                return data;
-            }
-        }
-    } catch (error) {
-        console.error('Error fetching NFT staking data:', error);
-    }
-    return null;
 }
 
 // Data update functions
