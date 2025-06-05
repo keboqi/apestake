@@ -114,48 +114,6 @@ function updateCalculationInputs() {
     document.getElementById('bakc-input').value = currentInputs.bakcCount;
 }
 
-function saveDefaultsToLocalStorage() {
-    const newDefaults = {
-        ape: { apy: parseFloat(document.getElementById('config-ape-apy').value) || DEFAULT_DATA.ape.apy },
-        bayc: { 
-            dailyRewardsFull: parseFloat(document.getElementById('config-bayc-daily').value) || DEFAULT_DATA.bayc.dailyRewardsFull,
-            apr: DEFAULT_DATA.bayc.apr 
-        },
-        mayc: { 
-            dailyRewardsFull: parseFloat(document.getElementById('config-mayc-daily').value) || DEFAULT_DATA.mayc.dailyRewardsFull,
-            apr: DEFAULT_DATA.mayc.apr 
-        },
-        bakc: { 
-            dailyRewardsFull: parseFloat(document.getElementById('config-bakc-daily').value) || DEFAULT_DATA.bakc.dailyRewardsFull,
-            apr: DEFAULT_DATA.bakc.apr 
-        },
-        apePrice: parseFloat(document.getElementById('config-ape-price').value) || DEFAULT_DATA.apePrice,
-        usdCnyRate: parseFloat(document.getElementById('config-usd-cny').value) || DEFAULT_DATA.usdCnyRate
-    };
-    
-    // Update DEFAULT_DATA
-    Object.assign(DEFAULT_DATA, newDefaults);
-    
-    // Save as custom defaults
-    localStorage.setItem('apeCalculatorDefaults', JSON.stringify(newDefaults));
-    
-    showNotification('New default values saved successfully! 🎉', 'success');
-}
-
-function loadCustomDefaults() {
-    try {
-        const saved = localStorage.getItem('apeCalculatorDefaults');
-        if (saved) {
-            const parsedDefaults = JSON.parse(saved);
-            Object.assign(DEFAULT_DATA, parsedDefaults);
-            return true;
-        }
-    } catch (error) {
-        console.error('Error loading custom defaults:', error);
-    }
-    return false;
-}
-
 // UI update functions
 function updateAllDisplays() {
     // Update header stats
@@ -336,62 +294,6 @@ async function fetchLiveData() {
     }
 }
 
-// Data update functions
-function updateDataFromInputs() {
-    const newData = {
-        ape: { 
-            apy: parseFloat(document.getElementById('config-ape-apy').value) || currentData.ape.apy 
-        },
-        bayc: { 
-            dailyRewardsFull: parseFloat(document.getElementById('config-bayc-daily').value) || currentData.bayc.dailyRewardsFull,
-            apr: currentData.bayc.apr // Keep existing APR
-        },
-        mayc: { 
-            dailyRewardsFull: parseFloat(document.getElementById('config-mayc-daily').value) || currentData.mayc.dailyRewardsFull,
-            apr: currentData.mayc.apr // Keep existing APR
-        },
-        bakc: { 
-            dailyRewardsFull: parseFloat(document.getElementById('config-bakc-daily').value) || currentData.bakc.dailyRewardsFull,
-            apr: currentData.bakc.apr // Keep existing APR
-        },
-        apePrice: parseFloat(document.getElementById('config-ape-price').value) || currentData.apePrice,
-        usdCnyRate: parseFloat(document.getElementById('config-usd-cny').value) || currentData.usdCnyRate
-    };
-    
-    // Calculate APR for NFT pools based on daily rewards
-    newData.bayc.apr = calculateAPRFromDaily(newData.bayc.dailyRewardsFull, APE_PER_NFT.bayc);
-    newData.mayc.apr = calculateAPRFromDaily(newData.mayc.dailyRewardsFull, APE_PER_NFT.mayc);
-    newData.bakc.apr = calculateAPRFromDaily(newData.bakc.dailyRewardsFull, APE_PER_NFT.bakc);
-    
-    currentData = newData;
-    
-    // Save to localStorage
-    if (saveDataToLocalStorage(currentData)) {
-        updateAllDisplays();
-        updateDataStatus('Manual Input', new Date().toLocaleString());
-        showNotification('Data updated successfully! 📊', 'success');
-        
-        // Auto-calculate if there are existing inputs
-        if (hasCalculationInputs()) {
-            calculateRewards();
-        }
-    } else {
-        showNotification('Failed to save data. Please try again.', 'error');
-    }
-}
-
-function resetToDefaults() {
-    currentData = { ...DEFAULT_DATA };
-    updateConfigInputs();
-    updateAllDisplays();
-    updateDataStatus('Default Values', 'System Default');
-    
-    // Save to localStorage
-    saveDataToLocalStorage(currentData);
-    
-    showNotification('Data reset to default values! 🔄', 'info');
-}
-
 // Calculation functions
 function calculateAPRFromDaily(dailyRewards, apeStaked) {
     if (apeStaked === 0) return 0;
@@ -500,85 +402,146 @@ function updatePoolBreakdown(poolName, inputAmount, dailyRewards, shouldShow, un
     }
 }
 
-// Input validation
-function setupInputValidation() {
-    const inputs = document.querySelectorAll('input[type="number"]');
-    inputs.forEach(input => {
+// Listener setup for staking inputs (APE amount, NFT counts)
+function setupStakingInputListeners() {
+    const stakingInputs = [
+        document.getElementById('ape-input'),
+        document.getElementById('bayc-input'),
+        document.getElementById('mayc-input'),
+        document.getElementById('bakc-input')
+    ];
+    let debounceTimeoutId;
+
+    stakingInputs.forEach(input => {
+        if (!input) return; // Guard against missing elements if HTML changes
+
+        // Basic input sanitization (non-negative, integers for NFTs, decimals for APE)
         input.addEventListener('input', function() {
-            // For APE input, allow decimal values
-            if (this.id === 'ape-input' || this.id.includes('config-ape-price') || this.id.includes('config-usd-cny') || this.id.includes('config-ape-apy') || this.id.includes('daily')) {
-                if (this.value < 0) this.value = 0;
-                // Allow decimal values
-            } else {
-                // For NFT counts, ensure non-negative integer values
-                if (this.value < 0) this.value = 0;
+            if (this.value < 0) this.value = 0;
+            if (this.id !== 'ape-input') {
                 this.value = Math.floor(this.value);
             }
         });
         
-        // Auto-calculate on input change (debounced) and save inputs
-        let timeoutId;
+        // Debounced listener for calculations
         input.addEventListener('input', function() {
-            if (this.id.includes('ape-input') || this.id.includes('bayc-input') || 
-                this.id.includes('mayc-input') || this.id.includes('bakc-input')) {
-                
-                // Save inputs on every change
+            clearTimeout(debounceTimeoutId);
+            debounceTimeoutId = setTimeout(() => {
                 saveCurrentInputs();
-                
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => {
-                    if (hasCalculationInputs()) {
-                        calculateRewards();
-                    }
-                }, 500);
-            }
+                // Always calculate, even if inputs are zero, to clear/update results display
+                calculateRewards();
+            }, 500);
         });
     });
 }
 
-// Event listeners setup
-function setupEventListeners() {
-    // Data configuration buttons
-    document.getElementById('update-data-btn').addEventListener('click', updateDataFromInputs);
-    document.getElementById('reset-data-btn').addEventListener('click', resetToDefaults);
-    document.getElementById('save-defaults-btn').addEventListener('click', saveDefaultsToLocalStorage);
-    
-    // Auto-fetch button
-    document.getElementById('auto-fetch-btn').addEventListener('click', fetchLiveData);
-    
-    // Calculate button
-    document.getElementById('calculate-btn').addEventListener('click', calculateRewards);
-    
-    // Setup input validation
-    setupInputValidation();
+// Listener setup for configuration panel inputs
+function setupConfigInputListeners() {
+    const configInputIds = [
+        'config-ape-apy', 'config-bayc-daily', 'config-mayc-daily',
+        'config-bakc-daily', 'config-ape-price', 'config-usd-cny'
+    ];
+    const configInputs = configInputIds.map(id => document.getElementById(id));
+    let debounceTimeoutId;
+
+    configInputs.forEach(input => {
+        if (!input) return; // Guard
+
+        // Basic input sanitization (non-negative)
+        input.addEventListener('input', function() {
+            if (this.value < 0) this.value = 0;
+        });
+
+        // Debounced listener for updating currentData and UI
+        input.addEventListener('input', function() {
+            clearTimeout(debounceTimeoutId);
+            debounceTimeoutId = setTimeout(() => {
+                const value = parseFloat(this.value);
+                let updated = false;
+
+                switch (this.id) {
+                    case 'config-ape-apy':
+                        currentData.ape.apy = value || DEFAULT_DATA.ape.apy;
+                        updated = true;
+                        break;
+                    case 'config-bayc-daily':
+                        currentData.bayc.dailyRewardsFull = value || DEFAULT_DATA.bayc.dailyRewardsFull;
+                        currentData.bayc.apr = calculateAPRFromDaily(currentData.bayc.dailyRewardsFull, APE_PER_NFT.bayc);
+                        updated = true;
+                        break;
+                    case 'config-mayc-daily':
+                        currentData.mayc.dailyRewardsFull = value || DEFAULT_DATA.mayc.dailyRewardsFull;
+                        currentData.mayc.apr = calculateAPRFromDaily(currentData.mayc.dailyRewardsFull, APE_PER_NFT.mayc);
+                        updated = true;
+                        break;
+                    case 'config-bakc-daily':
+                        currentData.bakc.dailyRewardsFull = value || DEFAULT_DATA.bakc.dailyRewardsFull;
+                        currentData.bakc.apr = calculateAPRFromDaily(currentData.bakc.dailyRewardsFull, APE_PER_NFT.bakc);
+                        updated = true;
+                        break;
+                    case 'config-ape-price':
+                        currentData.apePrice = value || DEFAULT_DATA.apePrice;
+                        updated = true;
+                        break;
+                    case 'config-usd-cny':
+                        currentData.usdCnyRate = value || DEFAULT_DATA.usdCnyRate;
+                        updated = true;
+                        break;
+                }
+
+                if (updated) {
+                    if (saveDataToLocalStorage(currentData)) {
+                        updateDataStatus('Manual Input', new Date().toLocaleString());
+                        updateAllDisplays(); // Refresh headers, pool stats, etc.
+                        if (hasCalculationInputs()) {
+                            calculateRewards(); // Recalculate results if user has staking inputs
+                        }
+                         // No specific notification for each config change to avoid being too noisy.
+                         // Status update is sufficient.
+                    } else {
+                        showNotification('Error saving updated configuration data.', 'error');
+                    }
+                }
+            }, 750); // Slightly longer debounce for config inputs
+        });
+    });
+}
+
+
+// Event listeners setup for buttons
+function setupButtonEventListeners() {
+    const autoFetchButton = document.getElementById('auto-fetch-btn');
+    if (autoFetchButton) {
+        autoFetchButton.addEventListener('click', fetchLiveData);
+    }
+    // Other buttons were removed, so their listeners are not needed.
 }
 
 // Initialization
 function initializeApp() {
-    // Load custom defaults if available
-    loadCustomDefaults();
-    
     // Load saved data or use defaults
     const savedData = loadDataFromLocalStorage();
     if (savedData) {
         currentData = savedData;
         updateDataStatus('Saved Data', 'Loaded from browser storage');
     } else {
-        currentData = { ...DEFAULT_DATA };
-        updateDataStatus('Default Values', 'System Default');
+        currentData = { ...DEFAULT_DATA }; // Use hardcoded defaults if nothing in localStorage
+        updateDataStatus('Default Values', 'Using system defaults');
     }
     
-    // Load saved inputs or use defaults
+    // Load saved calculation inputs (ape amount, nft counts) or use defaults
     const hasInputs = loadSavedInputs();
     
-    // Update all displays
-    updateConfigInputs();
-    updateAllDisplays();
+    // Update all displays with currentData (either loaded or default)
+    updateConfigInputs(); // Populate config panel inputs from currentData
+    updateAllDisplays();  // Update header, pool stats etc.
     
     // Setup event listeners
-    setupEventListeners();
+    setupButtonEventListeners();
+    setupStakingInputListeners();
+    setupConfigInputListeners();
     
-    // Auto-calculate if there are saved inputs
+    // Auto-calculate if there are saved calculation inputs
     if (hasInputs && hasCalculationInputs()) {
         calculateRewards();
     }
