@@ -441,11 +441,12 @@ function setupConfigInputListeners() {
         'config-ape-apy', 'config-bayc-daily', 'config-mayc-daily',
         'config-bakc-daily', 'config-ape-price', 'config-usd-cny'
     ];
-    const configInputs = configInputIds.map(id => document.getElementById(id));
-    let debounceTimeoutId;
 
-    configInputs.forEach(input => {
+    configInputIds.forEach(id => {
+        const input = document.getElementById(id);
         if (!input) return; // Guard
+
+        let debounceTimeoutId;
 
         // Basic input sanitization (non-negative)
         input.addEventListener('input', function() {
