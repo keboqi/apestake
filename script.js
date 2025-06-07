@@ -822,7 +822,9 @@ function initializeApp() {
 
     setupAllEventListeners();
     performInitialUIDisplayAndCalculations(inputsWereLoaded);
-    initiateDelayedAutoFetch(inputsWereLoaded);
+
+    // Fetch fresh data once when the page loads
+    fetchLiveData();
 }
 
 // Run when DOM is loaded
