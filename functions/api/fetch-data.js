@@ -75,7 +75,10 @@ export async function onRequest(context) {
     // Define constants that might be used in multiple places
     const APECHAIN_RPC_URL = 'https://apechain.calderachain.xyz/http';
     const STAKING_CONTRACT_ADDRESS = '0x4ba2396086d52ca68a37d9c0fa364286e9c7835a';
-    const GET_ALL_STAKES_CALL_DATA = '0xd42a6eeb000000000000000000000000ea4b9b75cd563a9e003bb9c16bb7a963d2fdc750000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000030000000000000000000000000000000000000000000000000000000000001c670000000000000000000000000000000000000000000000000000000000005fde0000000000000000000000000000000000000000000000000000000000001c6700000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001';
+    const APE_CONTRACT_ADDRESS = '0x000000000000000000000000000000000000006b';
+    // Fixed call data - removed the odd length issue that was causing parsing errors
+    const GET_ALL_STAKES_CALL_DATA = '0xd42a6eeb000000000000000000000000ea4b9b75cd563a9e003bb9c16bb7a963d2fdc750000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000001c6700000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000005fde00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000001c67';
+    const GET_APY_CALL_DATA = '0x1fb922e0'; // getApy() function selector
     
     // Fetch APE price from CryptoRates.ai API (CORS-friendly)
     try {
@@ -111,13 +114,22 @@ export async function onRequest(context) {
     try { // 1. Primary: ApeChain On-Chain (`getAllStakes`)
       const payload = {
         jsonrpc: '2.0',
-        id: 2, // Distinct ID
+        id: 365061061772180, // Use working ID from successful calls
         method: 'eth_call',
-        params: [{ to: STAKING_CONTRACT_ADDRESS, data: GET_ALL_STAKES_CALL_DATA }, 'latest']
+        params: [{ 
+          from: '0x0000000000000000000000000000000000000000',
+          to: STAKING_CONTRACT_ADDRESS, 
+          data: GET_ALL_STAKES_CALL_DATA 
+        }, 'latest']
       };
       const response = await fetch(APECHAIN_RPC_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Origin': 'https://apescan.io',
+          'Referer': 'https://apescan.io/',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+        },
         body: JSON.stringify(payload)
       });
 
@@ -249,38 +261,92 @@ export async function onRequest(context) {
     // --- End NFT Data Fetching ---
 
     // --- Start apeApy Fetching ---
-    // Fallback Order: 1. ApeScan Website -> 2. TrackMyYield.xyz -> 3. Hardcoded Default
+    // Fallback Order: 1. ApeChain On-Chain RPC -> 2. ApeScan Website -> 3. TrackMyYield.xyz -> 4. Hardcoded Default
 
-    // Attempt 1: ApeScan Website
+    // Attempt 1: ApeChain On-Chain RPC (getApy)
     try {
-      const apeScanUrl = 'https://apescan.io/readContract?m=light&a=0x000000000000000000000000000000000000006b&n=ape&v=0x000000000000000000000000000000000000006b';
-      const response = await fetch(apeScanUrl);
-      if (!response.ok) {
-        throw new Error(`ApeScan fetch failed with status: ${response.status}`);
-      }
-      const htmlText = await response.text();
-      // Regex as a string, to be used with new RegExp if needed, but .match directly is fine for simple cases.
-      const apeScanRegex = /getApy\s*\(0x[0-9a-fA-F]+\)\s*(\d+)\s*uint64/;
-      const match = htmlText.match(apeScanRegex);
+      const apyPayload = {
+        jsonrpc: '2.0',
+        id: 365061061772181, // Different ID from NFT call
+        method: 'eth_call',
+        params: [{ 
+          from: '0x0000000000000000000000000000000000000000',
+          to: APE_CONTRACT_ADDRESS, 
+          data: GET_APY_CALL_DATA 
+        }, 'latest']
+      };
+      const apyResponse = await fetch(APECHAIN_RPC_URL, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Origin': 'https://apescan.io',
+          'Referer': 'https://apescan.io/',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+        },
+        body: JSON.stringify(apyPayload)
+      });
 
-      if (match && match[1]) {
-        const rawApy = BigInt(match[1]);
-        const calculatedApy = Number(rawApy) / (10**9);
+      if (!apyResponse.ok) throw new Error(`On-chain APY fetch failed with status: ${apyResponse.status}`);
+
+      const apyResponseData = await apyResponse.json();
+      if (!apyResponseData.result || apyResponseData.result === "0x" || apyResponseData.result === "0x0000000000000000000000000000000000000000000000000000000000000000") {
+        throw new Error("Empty or invalid result from on-chain APY call.");
+      }
+
+      // Decode the APY result (uint64)
+      let resultHex = apyResponseData.result;
+      if (resultHex.startsWith('0x')) {
+        resultHex = resultHex.substring(2);
+      }
+      
+      const rawApy = BigInt('0x' + resultHex);
+      const calculatedApy = Number(rawApy) / (10**9);
+      
+      if (calculatedApy > 0 && calculatedApy < 50) { // Reasonable APY range
         statusDetails.apeApy.value = parseFloat(calculatedApy.toFixed(2));
-        statusDetails.apeApy.source = 'ApeScan Website';
+        statusDetails.apeApy.source = 'ApeChain On-Chain RPC';
         statusDetails.apeApy.error = null;
       } else {
-        throw new Error("Could not parse APY from ApeScan page.");
+        throw new Error(`APY value out of reasonable range: ${calculatedApy}`);
       }
-    } catch (apeScanError) {
-      const errorMsg = `ApeScan website fetch/parse failed: ${apeScanError.message}`;
-      statusDetails.apeApy.error = errorMsg; // Set as the first error
+    } catch (onChainApyError) {
+      const errorMsg = `On-chain APY fetch failed: ${onChainApyError.message}`;
+      statusDetails.apeApy.error = errorMsg;
       if (!fetchErrors.includes(errorMsg)) fetchErrors.push(errorMsg);
-      // statusDetails.apeApy.value remains null
+    }
+
+        if (statusDetails.apeApy.value === null) { // If on-chain failed, try ApeScan Website
+      // Attempt 2: ApeScan Website
+      try {
+        const apeScanUrl = 'https://apescan.io/readContract?m=light&a=0x000000000000000000000000000000000000006b&n=ape&v=0x000000000000000000000000000000000000006b';
+        const response = await fetch(apeScanUrl);
+        if (!response.ok) {
+          throw new Error(`ApeScan fetch failed with status: ${response.status}`);
+        }
+        const htmlText = await response.text();
+        // Regex as a string, to be used with new RegExp if needed, but .match directly is fine for simple cases.
+        const apeScanRegex = /getApy\s*\(0x[0-9a-fA-F]+\)\s*(\d+)\s*uint64/;
+        const match = htmlText.match(apeScanRegex);
+
+        if (match && match[1]) {
+          const rawApy = BigInt(match[1]);
+          const calculatedApy = Number(rawApy) / (10**9);
+          statusDetails.apeApy.value = parseFloat(calculatedApy.toFixed(2));
+          statusDetails.apeApy.source = 'ApeScan Website';
+          statusDetails.apeApy.error = null;
+        } else {
+          throw new Error("Could not parse APY from ApeScan page.");
+        }
+      } catch (apeScanError) {
+        const errorMsg = `ApeScan website fetch/parse failed: ${apeScanError.message}`;
+        statusDetails.apeApy.error = errorMsg; // Set as the first error
+        if (!fetchErrors.includes(errorMsg)) fetchErrors.push(errorMsg);
+        // statusDetails.apeApy.value remains null
+      }
     }
 
     if (statusDetails.apeApy.value === null) { // If ApeScan failed, try TrackMyYield.xyz
-      // Attempt 2: TrackMyYield.xyz Website
+      // Attempt 3: TrackMyYield.xyz Website
       try {
         const tmyResponse = await fetch('https://trackmyyield.xyz/', {
           headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
@@ -322,8 +388,8 @@ export async function onRequest(context) {
       }
     }
 
-    if (statusDetails.apeApy.value === null) { // If both ApeScan and TrackMyYield failed
-      // Attempt 3: Hardcoded Default
+    if (statusDetails.apeApy.value === null) { // If all sources failed (On-chain, ApeScan, and TrackMyYield)
+      // Attempt 4: Hardcoded Default
       statusDetails.apeApy.value = 6.0;
       statusDetails.apeApy.source = 'Fallback Default';
       // statusDetails.apeApy.error retains the error(s) from failed attempts
