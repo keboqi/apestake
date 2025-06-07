@@ -1047,6 +1047,11 @@ input::placeholder {
     border-radius: 2px;
 }
 
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
 /* Price Information Display Styles */
 .price-info {
     display: flex;
