@@ -151,12 +151,30 @@ function updateAllDisplays() {
 }
 
 function updateConfigInputs() {
-    if (domElements.configApeApy) domElements.configApeApy.value = currentData.ape.apy;
-    if (domElements.configBaycDaily) domElements.configBaycDaily.value = currentData.bayc.dailyRewardsFull;
-    if (domElements.configMaycDaily) domElements.configMaycDaily.value = currentData.mayc.dailyRewardsFull;
-    if (domElements.configBakcDaily) domElements.configBakcDaily.value = currentData.bakc.dailyRewardsFull;
-    if (domElements.configApePrice) domElements.configApePrice.value = currentData.apePrice;
-    if (domElements.configUsdCny) domElements.configUsdCny.value = currentData.usdCnyRate;
+    if (domElements.configApeApy) {
+        domElements.configApeApy.value = currentData.ape.apy;
+        domElements.configApeApy.placeholder = String(currentData.ape.apy);
+    }
+    if (domElements.configBaycDaily) {
+        domElements.configBaycDaily.value = currentData.bayc.dailyRewardsFull;
+        domElements.configBaycDaily.placeholder = String(currentData.bayc.dailyRewardsFull);
+    }
+    if (domElements.configMaycDaily) {
+        domElements.configMaycDaily.value = currentData.mayc.dailyRewardsFull;
+        domElements.configMaycDaily.placeholder = String(currentData.mayc.dailyRewardsFull);
+    }
+    if (domElements.configBakcDaily) {
+        domElements.configBakcDaily.value = currentData.bakc.dailyRewardsFull;
+        domElements.configBakcDaily.placeholder = String(currentData.bakc.dailyRewardsFull);
+    }
+    if (domElements.configApePrice) {
+        domElements.configApePrice.value = currentData.apePrice;
+        domElements.configApePrice.placeholder = String(currentData.apePrice);
+    }
+    if (domElements.configUsdCny) {
+        domElements.configUsdCny.value = currentData.usdCnyRate;
+        domElements.configUsdCny.placeholder = String(currentData.usdCnyRate);
+    }
 }
 
 function updateDataStatus(source, timestamp) {
