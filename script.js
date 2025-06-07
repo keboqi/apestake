@@ -151,12 +151,37 @@ function updateAllDisplays() {
 }
 
 function updateConfigInputs() {
-    if (domElements.configApeApy) domElements.configApeApy.value = currentData.ape.apy;
-    if (domElements.configBaycDaily) domElements.configBaycDaily.value = currentData.bayc.dailyRewardsFull;
-    if (domElements.configMaycDaily) domElements.configMaycDaily.value = currentData.mayc.dailyRewardsFull;
-    if (domElements.configBakcDaily) domElements.configBakcDaily.value = currentData.bakc.dailyRewardsFull;
-    if (domElements.configApePrice) domElements.configApePrice.value = currentData.apePrice;
-    if (domElements.configUsdCny) domElements.configUsdCny.value = currentData.usdCnyRate;
+    const apeApyInput = domElements['config-ape-apy'];
+    const baycDailyInput = domElements['config-bayc-daily'];
+    const maycDailyInput = domElements['config-mayc-daily'];
+    const bakcDailyInput = domElements['config-bakc-daily'];
+    const apePriceInput = domElements['config-ape-price'];
+    const usdCnyInput = domElements['config-usd-cny'];
+
+    if (apeApyInput) {
+        apeApyInput.value = currentData.ape.apy;
+        apeApyInput.placeholder = String(currentData.ape.apy);
+    }
+    if (baycDailyInput) {
+        baycDailyInput.value = currentData.bayc.dailyRewardsFull;
+        baycDailyInput.placeholder = String(currentData.bayc.dailyRewardsFull);
+    }
+    if (maycDailyInput) {
+        maycDailyInput.value = currentData.mayc.dailyRewardsFull;
+        maycDailyInput.placeholder = String(currentData.mayc.dailyRewardsFull);
+    }
+    if (bakcDailyInput) {
+        bakcDailyInput.value = currentData.bakc.dailyRewardsFull;
+        bakcDailyInput.placeholder = String(currentData.bakc.dailyRewardsFull);
+    }
+    if (apePriceInput) {
+        apePriceInput.value = currentData.apePrice;
+        apePriceInput.placeholder = String(currentData.apePrice);
+    }
+    if (usdCnyInput) {
+        usdCnyInput.value = currentData.usdCnyRate;
+        usdCnyInput.placeholder = String(currentData.usdCnyRate);
+    }
 }
 
 function updateDataStatus(source, timestamp) {
