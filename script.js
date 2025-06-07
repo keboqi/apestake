@@ -20,6 +20,14 @@ const DEFAULT_INPUTS = {
 let currentData = { ...DEFAULT_DATA };
 let currentInputs = { ...DEFAULT_INPUTS };
 
+// --- DOM Element Cache ---
+const domElements = {};
+
+// --- Constants ---
+const DEBOUNCE_TIME_STAKING_INPUTS_MS = 500;
+const DEBOUNCE_TIME_CONFIG_INPUTS_MS = 750;
+// Note: DAYS_IN_MONTH and DAYS_IN_YEAR are already defined before calculateIndividualRewards
+
 // APE staking amounts per NFT
 const APE_PER_NFT = {
     bayc: 10094,
@@ -87,10 +95,10 @@ function loadInputsFromLocalStorage() {
 
 function saveCurrentInputs() {
     const inputs = {
-        apeAmount: parseFloat(document.getElementById('ape-input').value) || 0,
-        baycCount: parseInt(document.getElementById('bayc-input').value) || 0,
-        maycCount: parseInt(document.getElementById('mayc-input').value) || 0,
-        bakcCount: parseInt(document.getElementById('bakc-input').value) || 0
+        apeAmount: parseFloat(domElements.apeInput.value) || 0,
+        baycCount: parseInt(domElements.baycInput.value) || 0,
+        maycCount: parseInt(domElements.maycInput.value) || 0,
+        bakcCount: parseInt(domElements.bakcInput.value) || 0
     };
     
     currentInputs = inputs;
@@ -101,96 +109,117 @@ function loadSavedInputs() {
     const savedInputs = loadInputsFromLocalStorage();
     if (savedInputs) {
         currentInputs = savedInputs;
-        updateCalculationInputs();
+        updateCalculationInputs(); // Uses domElements internally now
         return true;
     }
     return false;
 }
 
 function updateCalculationInputs() {
-    document.getElementById('ape-input').value = currentInputs.apeAmount;
-    document.getElementById('bayc-input').value = currentInputs.baycCount;
-    document.getElementById('mayc-input').value = currentInputs.maycCount;
-    document.getElementById('bakc-input').value = currentInputs.bakcCount;
+    domElements.apeInput?.value = currentInputs.apeAmount;
+    domElements.baycInput?.value = currentInputs.baycCount;
+    domElements.maycInput?.value = currentInputs.maycCount;
+    domElements.bakcInput?.value = currentInputs.bakcCount;
 }
 
 // UI update functions
 function updateAllDisplays() {
     // Update header stats
-    document.getElementById('header-ape-apy').textContent = `${currentData.ape.apy}%`;
-    document.getElementById('header-bayc-apr').textContent = `${currentData.bayc.apr}%`;
-    document.getElementById('header-mayc-apr').textContent = `${currentData.mayc.apr}%`;
-    document.getElementById('header-bakc-apr').textContent = `${currentData.bakc.apr}%`;
-    document.getElementById('header-ape-price').textContent = `$${currentData.apePrice.toFixed(4)}`;
-    document.getElementById('header-usd-cny').textContent = `${currentData.usdCnyRate.toFixed(4)}`;
+    domElements.headerApeApy?.textContent = `${currentData.ape.apy}%`;
+    domElements.headerBaycApr?.textContent = `${currentData.bayc.apr}%`;
+    domElements.headerMaycApr?.textContent = `${currentData.mayc.apr}%`;
+    domElements.headerBakcApr?.textContent = `${currentData.bakc.apr}%`;
+    domElements.headerApePrice?.textContent = `$${currentData.apePrice.toFixed(4)}`;
+    domElements.headerUsdCny?.textContent = `${currentData.usdCnyRate.toFixed(4)}`;
     
     // Update pool stats
-    document.getElementById('ape-apy').textContent = `${currentData.ape.apy}%`;
-    document.getElementById('ape-daily-rate').textContent = `${(currentData.ape.apy / 365).toFixed(4)}%`;
+    domElements.apeApy?.textContent = `${currentData.ape.apy}%`;
+    domElements.apeDailyRate?.textContent = `${(currentData.ape.apy / DAYS_IN_YEAR).toFixed(4)}%`;
     
-    document.getElementById('bayc-daily-rewards').textContent = `${currentData.bayc.dailyRewardsFull} APE`;
-    document.getElementById('bayc-apr').textContent = `${currentData.bayc.apr}%`;
+    domElements.baycDailyRewards?.textContent = `${currentData.bayc.dailyRewardsFull} APE`;
+    domElements.baycApr?.textContent = `${currentData.bayc.apr}%`;
     
-    document.getElementById('mayc-daily-rewards').textContent = `${currentData.mayc.dailyRewardsFull} APE`;
-    document.getElementById('mayc-apr').textContent = `${currentData.mayc.apr}%`;
+    domElements.maycDailyRewards?.textContent = `${currentData.mayc.dailyRewardsFull} APE`;
+    domElements.maycApr?.textContent = `${currentData.mayc.apr}%`;
     
-    document.getElementById('bakc-daily-rewards').textContent = `${currentData.bakc.dailyRewardsFull} APE`;
-    document.getElementById('bakc-apr').textContent = `${currentData.bakc.apr}%`;
+    domElements.bakcDailyRewards?.textContent = `${currentData.bakc.dailyRewardsFull} APE`;
+    domElements.bakcApr?.textContent = `${currentData.bakc.apr}%`;
     
     // Update result display prices
-    document.getElementById('display-ape-price').textContent = `$${currentData.apePrice.toFixed(4)}`;
-    document.getElementById('display-usd-cny').textContent = `${currentData.usdCnyRate.toFixed(4)}`;
+    domElements.displayApePrice?.textContent = `$${currentData.apePrice.toFixed(4)}`;
+    domElements.displayUsdCny?.textContent = `${currentData.usdCnyRate.toFixed(4)}`;
 }
 
 function updateConfigInputs() {
-    document.getElementById('config-ape-apy').value = currentData.ape.apy;
-    document.getElementById('config-bayc-daily').value = currentData.bayc.dailyRewardsFull;
-    document.getElementById('config-mayc-daily').value = currentData.mayc.dailyRewardsFull;
-    document.getElementById('config-bakc-daily').value = currentData.bakc.dailyRewardsFull;
-    document.getElementById('config-ape-price').value = currentData.apePrice;
-    document.getElementById('config-usd-cny').value = currentData.usdCnyRate;
+    domElements.configApeApy?.value = currentData.ape.apy;
+    domElements.configBaycDaily?.value = currentData.bayc.dailyRewardsFull;
+    domElements.configMaycDaily?.value = currentData.mayc.dailyRewardsFull;
+    domElements.configBakcDaily?.value = currentData.bakc.dailyRewardsFull;
+    domElements.configApePrice?.value = currentData.apePrice;
+    domElements.configUsdCny?.value = currentData.usdCnyRate;
 }
 
 function updateDataStatus(source, timestamp) {
-    document.getElementById('data-source-status').textContent = source;
-    document.getElementById('last-updated-status').textContent = timestamp;
+    domElements.dataSourceStatus?.textContent = source;
+    domElements.lastUpdatedStatus?.textContent = timestamp;
 }
 
 // Notification system
 function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
+    // Create notification element
+    const notification = document.createElement('div');
+    // Base class 'notification' and type-specific class e.g., 'notification-info', 'notification-success', 'notification-error'
     notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-message">${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-    `;
+    notification.setAttribute('role', 'alert');
+
+    const content = document.createElement('div');
+    content.className = 'notification-content';
+
+    const messageSpan = document.createElement('span');
+    messageSpan.className = 'notification-message';
+    messageSpan.textContent = message;
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'notification-close';
+    closeButton.innerHTML = '&times;'; // Use innerHTML for HTML entity
+    closeButton.setAttribute('aria-label', 'Close notification');
+    closeButton.onclick = () => notification.remove();
+
+    content.appendChild(messageSpan);
+    content.appendChild(closeButton);
+    notification.appendChild(content);
     
-    // Add styles for notification
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? 'var(--gradient-success)' : 
-                    type === 'error' ? 'var(--gradient-warning)' : 
-                    'var(--gradient-primary)'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        box-shadow: var(--shadow-lg);
-        z-index: 9999;
-        max-width: 400px;
-        animation: slideIn 0.3s ease-out;
-    `;
-    
-    // Add animation styles if not already present
-    if (!document.getElementById('notification-styles')) {
-        const style = document.createElement('style');
-        style.id = 'notification-styles';
-        style.textContent = `
-            @keyframes slideIn {
+    // Ensure CSS for notifications is injected only once
+    if (!document.getElementById('custom-notification-styles')) {
+        const styleSheet = document.createElement('style');
+        styleSheet.id = 'custom-notification-styles';
+        styleSheet.textContent = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px; /* Consistent with original */
+                box-shadow: var(--shadow-lg); /* Use existing CSS var */
+                z-index: 9999;
+                max-width: 400px;
+                animation: notificationSlideIn 0.3s ease-out forwards;
+                display: flex; /* For alignment of content */
+                align-items: center; /* For alignment of content */
+            }
+            .notification-info {
+                background: var(--gradient-primary); /* Use existing CSS var */
+            }
+            .notification-success {
+                background: var(--gradient-success); /* Use existing CSS var */
+            }
+            .notification-error {
+                background: var(--gradient-warning); /* Use existing CSS var */
+            }
+            @keyframes notificationSlideIn {
                 from { transform: translateX(100%); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
             }
@@ -199,6 +228,10 @@ function showNotification(message, type = 'info') {
                 justify-content: space-between;
                 align-items: center;
                 gap: 1rem;
+                width: 100%; /* Ensure content fills notification */
+            }
+            .notification-message {
+                flex-grow: 1; /* Allow message to take available space */
             }
             .notification-close {
                 background: none;
@@ -208,12 +241,13 @@ function showNotification(message, type = 'info') {
                 cursor: pointer;
                 padding: 0;
                 line-height: 1;
+                opacity: 0.8;
             }
             .notification-close:hover {
-                opacity: 0.7;
+                opacity: 1;
             }
         `;
-        document.head.appendChild(style);
+        document.head.appendChild(styleSheet);
     }
     
     document.body.appendChild(notification);
@@ -236,26 +270,7 @@ async function fetchLiveData() {
             const data = await response.json();
             
             if (data.success) {
-                // Update current data with fetched values
-                const newData = {
-                    ape: { apy: data.apeApy },
-                    bayc: { 
-                        dailyRewardsFull: data.baycDaily,
-                        apr: parseFloat(data.baycApr)
-                    },
-                    mayc: { 
-                        dailyRewardsFull: data.maycDaily,
-                        apr: parseFloat(data.maycApr)
-                    },
-                    bakc: { 
-                        dailyRewardsFull: data.bakcDaily,
-                        apr: parseFloat(data.bakcApr)
-                    },
-                    apePrice: data.apePrice,
-                    usdCnyRate: data.usdCnyRate
-                };
-                
-                currentData = newData;
+                currentData = transformApiData(data);
                 
                 // Update all UI elements
                 updateConfigInputs();
@@ -264,9 +279,44 @@ async function fetchLiveData() {
                 // Save to localStorage
                 saveDataToLocalStorage(currentData);
                 
-                // Update status
-                updateDataStatus('Live API Data', new Date().toLocaleString());
-                showNotification('✅ Data updated from live sources!', 'success');
+                // Update status based on the actual sources from the API response
+                let overallDataSource = 'Live Market Data'; // Default for successful fetch
+                const sources = data.dataSources; // e.g., { apePrice: 'Live API Data', apeApy: 'KV Cache', ... }
+
+                if (sources) {
+                    // Define critical sources that determine the overall status
+                    const criticalSourceValues = [
+                        sources.apePrice,
+                        sources.apeApy,
+                        sources.nftStakingBAYC, // Names from dataSources object in fetch-data.js
+                        sources.nftStakingMAYC,
+                        sources.nftStakingBAKC
+                    ].filter(Boolean); // Filter out undefined if some sources are missing
+
+                    if (criticalSourceValues.length > 0) { // Only if we have some source info
+                        if (criticalSourceValues.some(s => s === 'Fallback Default')) {
+                            overallDataSource = 'Using Default Market Data';
+                        } else if (criticalSourceValues.some(s => s === 'KV Cache')) {
+                            overallDataSource = 'Using Cached Market Data';
+                        } else if (criticalSourceValues.every(s => s.includes('API') || s.includes('On-Chain'))) {
+                            overallDataSource = 'Live Market Data';
+                        } else {
+                            // If sources are mixed (e.g. some API, some KV, but no Fallback Default)
+                            // or if some sources are unexpected.
+                            overallDataSource = 'Fetched Data (Mixed Sources)';
+                        }
+                    } else if (Object.keys(sources).length > 0 && criticalSourceValues.length === 0) {
+                        // Non-critical sources might exist, but critical ones are missing/not reported
+                        overallDataSource = 'Fetched Data (Partial)';
+                    } else { // No source information at all
+                        overallDataSource = 'Fetched Data (Source Info Missing)';
+                    }
+                } else { // data.dataSources object itself is missing
+                    overallDataSource = 'Fetched Data (Source Info Missing)';
+                }
+
+                updateDataStatus(overallDataSource, data.timestamp ? new Date(data.timestamp).toLocaleString() : new Date().toLocaleString());
+                showNotification('✅ Data updated!', 'success'); // General success message
                 
                 // Auto-calculate if there are existing inputs
                 if (hasCalculationInputs()) {
@@ -275,23 +325,62 @@ async function fetchLiveData() {
                 
                 return true;
             } else {
-                // Handle cases where data.success is false
-                console.error('API request successful, but data.success is false:', data);
-                showNotification('❌ Failed to process live data. API returned an error.', 'error');
+                // Handle cases where data.success is false but API call was ok
+                const apiErrorMessage = data.error || (data.fetchErrors && data.fetchErrors.join('; ')) || 'API indicated an issue with data sources.';
+                console.error('API request successful, but data processing failed:', apiErrorMessage, data);
+                showNotification(`❌ Failed to process live data: ${apiErrorMessage}. Using cached values.`, 'error');
+                // Optionally, show more detailed errors if available in data.detailedStatus
+                // logDetailedErrors(data.detailedStatus);
                 return false;
             }
         } else {
             // Handle non-ok HTTP responses
-            console.error('Failed to fetch live data. Status:', response.status);
-            showNotification(`❌ Failed to fetch live data. Server returned status ${response.status}. Using cached values.`, 'error');
+            let errorInfo = `Server returned status ${response.status}.`;
+            try {
+                const errorData = await response.json();
+                errorInfo = errorData.error || JSON.stringify(errorData);
+            } catch (e) {
+                // If parsing JSON fails, try to get text
+                try {
+                    errorInfo = await response.text();
+                } catch (e2) { /* Keep the status code error */ }
+            }
+            console.error('Failed to fetch live data. Status:', response.status, errorInfo);
+            showNotification(`❌ Failed to fetch live data: ${errorInfo.substring(0,100)}. Using cached values.`, 'error');
             return false;
         }
         
-    } catch (error) {
+    } catch (error) { // Catch network errors or other unexpected issues with fetch itself
         console.error('Error fetching live data:', error);
-        showNotification('❌ Failed to fetch live data. Check your internet connection or server status. Using cached values.', 'error');
+        showNotification('❌ Network error or problem fetching live data. Check your connection. Using cached values.', 'error');
         return false;
     }
+}
+
+function transformApiData(apiData) {
+    // Ensure APR values are numbers and handle potential NaN from parseFloat
+    const parseApr = (apr) => {
+        const num = parseFloat(apr);
+        return isNaN(num) ? 0 : num; // Default to 0 if APR is not a valid number
+    };
+
+    return {
+        ape: { apy: apiData.apeApy || 0 }, // Default to 0 if undefined
+        bayc: {
+            dailyRewardsFull: apiData.baycDaily || 0,
+            apr: parseApr(apiData.baycApr)
+        },
+        mayc: {
+            dailyRewardsFull: apiData.maycDaily || 0,
+            apr: parseApr(apiData.maycApr)
+        },
+        bakc: {
+            dailyRewardsFull: apiData.bakcDaily || 0,
+            apr: parseApr(apiData.bakcApr)
+        },
+        apePrice: apiData.apePrice || 0,
+        usdCnyRate: apiData.usdCnyRate || 0
+    };
 }
 
 // Calculation functions
@@ -302,273 +391,415 @@ function calculateAPRFromDaily(dailyRewards, apeStaked) {
 }
 
 function hasCalculationInputs() {
-    const apeAmount = parseFloat(document.getElementById('ape-input').value) || 0;
-    const baycCount = parseInt(document.getElementById('bayc-input').value) || 0;
-    const maycCount = parseInt(document.getElementById('mayc-input').value) || 0;
-    const bakcCount = parseInt(document.getElementById('bakc-input').value) || 0;
+    const apeAmount = domElements.apeInput ? (parseFloat(domElements.apeInput.value) || 0) : 0;
+    const baycCount = domElements.baycInput ? (parseInt(domElements.baycInput.value) || 0) : 0;
+    const maycCount = domElements.maycInput ? (parseInt(domElements.maycInput.value) || 0) : 0;
+    const bakcCount = domElements.bakcInput ? (parseInt(domElements.bakcInput.value) || 0) : 0;
     
     return apeAmount > 0 || baycCount > 0 || maycCount > 0 || bakcCount > 0;
 }
 
-function calculateRewards() {
-    // Get user inputs
-    const apeAmount = parseFloat(document.getElementById('ape-input').value) || 0;
-    const baycCount = parseInt(document.getElementById('bayc-input').value) || 0;
-    const maycCount = parseInt(document.getElementById('mayc-input').value) || 0;
-    const bakcCount = parseInt(document.getElementById('bakc-input').value) || 0;
-    
-    // Save current inputs
-    saveCurrentInputs();
-    
-    // Calculate APE staked for each pool
-    const baycApeStaked = baycCount * APE_PER_NFT.bayc;
-    const maycApeStaked = maycCount * APE_PER_NFT.mayc;
-    const bakcApeStaked = bakcCount * APE_PER_NFT.bakc;
-    const totalApeStaked = baycApeStaked + maycApeStaked + bakcApeStaked + apeAmount;
-    
-    // Calculate daily rewards
-    const apeDailyRewards = apeAmount * (currentData.ape.apy / 365 / 100);
-    const baycDailyRewards = currentData.bayc.dailyRewardsFull * baycCount;
-    const maycDailyRewards = currentData.mayc.dailyRewardsFull * maycCount;
-    const bakcDailyRewards = currentData.bakc.dailyRewardsFull * bakcCount;
-    
-    const totalDailyRewards = apeDailyRewards + baycDailyRewards + maycDailyRewards + bakcDailyRewards;
-    const totalMonthlyRewards = totalDailyRewards * 30;
-    const totalAnnualRewards = totalDailyRewards * 365;
-    
-    // Calculate USD and CNY values
-    const dailyUSD = totalDailyRewards * currentData.apePrice;
-    const dailyCNY = dailyUSD * currentData.usdCnyRate;
-    const monthlyUSD = totalMonthlyRewards * currentData.apePrice;
-    const monthlyCNY = monthlyUSD * currentData.usdCnyRate;
-    const annualUSD = totalAnnualRewards * currentData.apePrice;
-    const annualCNY = annualUSD * currentData.usdCnyRate;
-    
-    // Update APE staked breakdown
-    document.getElementById('bayc-ape-staked').textContent = `${baycApeStaked.toLocaleString()} APE`;
-    document.getElementById('mayc-ape-staked').textContent = `${maycApeStaked.toLocaleString()} APE`;
-    document.getElementById('bakc-ape-staked').textContent = `${bakcApeStaked.toLocaleString()} APE`;
-    document.getElementById('direct-ape-staked').textContent = `${apeAmount.toLocaleString()} APE`;
-    document.getElementById('total-ape-staked').textContent = `${totalApeStaked.toLocaleString()} APE`;
-    
-    // Update breakdown for each pool
-    updatePoolBreakdown('ape', apeAmount, apeDailyRewards, apeAmount > 0, 'APE staked');
-    updatePoolBreakdown('bayc', baycCount, baycDailyRewards, baycCount > 0, 'NFTs staked');
-    updatePoolBreakdown('mayc', maycCount, maycDailyRewards, maycCount > 0, 'NFTs staked');
-    updatePoolBreakdown('bakc', bakcCount, bakcDailyRewards, bakcCount > 0, 'NFTs staked');
-    
-    // Update the total results
-    document.getElementById('daily-rewards').textContent = `${totalDailyRewards.toFixed(4)} APE`;
-    document.getElementById('monthly-rewards').textContent = `${totalMonthlyRewards.toFixed(2)} APE`;
-    document.getElementById('annual-rewards').textContent = `${totalAnnualRewards.toFixed(2)} APE`;
-    
-    // Update USD and CNY values
-    document.getElementById('daily-usd').textContent = `$${dailyUSD.toFixed(2)}`;
-    document.getElementById('daily-cny').textContent = `¥${dailyCNY.toFixed(2)}`;
-    document.getElementById('monthly-usd').textContent = `$${monthlyUSD.toFixed(2)}`;
-    document.getElementById('monthly-cny').textContent = `¥${monthlyCNY.toFixed(2)}`;
-    document.getElementById('annual-usd').textContent = `$${annualUSD.toFixed(2)}`;
-    document.getElementById('annual-cny').textContent = `¥${annualCNY.toFixed(2)}`;
-    
-    // Show the results container
-    document.getElementById('results-container').style.display = 'block';
+// --- Calculation Sub-functions ---
+
+function getUserStakingInputs() {
+    return {
+        apeAmount: domElements.apeInput ? (parseFloat(domElements.apeInput.value) || 0) : 0,
+        baycCount: domElements.baycInput ? (parseInt(domElements.baycInput.value) || 0) : 0,
+        maycCount: domElements.maycInput ? (parseInt(domElements.maycInput.value) || 0) : 0,
+        bakcCount: domElements.bakcInput ? (parseInt(domElements.bakcInput.value) || 0) : 0
+    };
 }
 
+function calculateStakedAmounts(inputs) {
+    const baycApeStaked = inputs.baycCount * APE_PER_NFT.bayc;
+    const maycApeStaked = inputs.maycCount * APE_PER_NFT.mayc;
+    const bakcApeStaked = inputs.bakcCount * APE_PER_NFT.bakc;
+    const totalApeStaked = baycApeStaked + maycApeStaked + bakcApeStaked + inputs.apeAmount;
+    return { baycApeStaked, maycApeStaked, bakcApeStaked, totalApeStaked };
+}
+
+const DAYS_IN_MONTH = 30; // Approximation for monthly calculations
+const DAYS_IN_YEAR = 365;
+
+function calculateIndividualRewards(inputs, data) {
+    const apeDailyRewards = inputs.apeAmount * (data.ape.apy / DAYS_IN_YEAR / 100);
+    const baycDailyRewards = data.bayc.dailyRewardsFull * inputs.baycCount;
+    const maycDailyRewards = data.mayc.dailyRewardsFull * inputs.maycCount;
+    const bakcDailyRewards = data.bakc.dailyRewardsFull * inputs.bakcCount;
+    return { apeDailyRewards, baycDailyRewards, maycDailyRewards, bakcDailyRewards };
+}
+
+function calculateTotalRewards(individualRewards) {
+    const totalDailyRewards = individualRewards.apeDailyRewards + individualRewards.baycDailyRewards + individualRewards.maycDailyRewards + individualRewards.bakcDailyRewards;
+    const totalMonthlyRewards = totalDailyRewards * DAYS_IN_MONTH;
+    const totalAnnualRewards = totalDailyRewards * DAYS_IN_YEAR;
+    return { totalDailyRewards, totalMonthlyRewards, totalAnnualRewards };
+}
+
+function calculateFiatValues(rewards, apePrice, usdCnyRate) {
+    const dailyUSD = rewards.totalDailyRewards * apePrice;
+    const dailyCNY = dailyUSD * usdCnyRate;
+    const monthlyUSD = rewards.totalMonthlyRewards * apePrice;
+    const monthlyCNY = monthlyUSD * usdCnyRate;
+    const annualUSD = rewards.totalAnnualRewards * apePrice;
+    const annualCNY = annualUSD * usdCnyRate;
+    return { dailyUSD, dailyCNY, monthlyUSD, monthlyCNY, annualUSD, annualCNY };
+}
+
+function updateResultsDisplay(inputs, stakedAmounts, individualRewards, totalRewards, fiatValues) {
+    // Update APE staked breakdown
+    domElements.baycApeStaked?.textContent = `${stakedAmounts.baycApeStaked.toLocaleString()} APE`;
+    domElements.maycApeStaked?.textContent = `${stakedAmounts.maycApeStaked.toLocaleString()} APE`;
+    domElements.bakcApeStaked?.textContent = `${stakedAmounts.bakcApeStaked.toLocaleString()} APE`;
+    domElements.directApeStaked?.textContent = `${inputs.apeAmount.toLocaleString()} APE`;
+    domElements.totalApeStaked?.textContent = `${stakedAmounts.totalApeStaked.toLocaleString()} APE`;
+
+    // Update breakdown for each pool (updatePoolBreakdown uses domElements internally too)
+    updatePoolBreakdown('ape', inputs.apeAmount, individualRewards.apeDailyRewards, inputs.apeAmount > 0, 'APE staked');
+    updatePoolBreakdown('bayc', inputs.baycCount, individualRewards.baycDailyRewards, inputs.baycCount > 0, 'NFTs staked');
+    updatePoolBreakdown('mayc', inputs.maycCount, individualRewards.maycDailyRewards, inputs.maycCount > 0, 'NFTs staked');
+    updatePoolBreakdown('bakc', inputs.bakcCount, individualRewards.bakcDailyRewards, inputs.bakcCount > 0, 'NFTs staked');
+
+    // Update the total results
+    domElements.dailyRewards?.textContent = `${totalRewards.totalDailyRewards.toFixed(4)} APE`;
+    domElements.monthlyRewards?.textContent = `${totalRewards.totalMonthlyRewards.toFixed(2)} APE`;
+    domElements.annualRewards?.textContent = `${totalRewards.totalAnnualRewards.toFixed(2)} APE`;
+
+    // Update USD and CNY values
+    domElements.dailyUsd?.textContent = `$${fiatValues.dailyUSD.toFixed(2)}`;
+    domElements.dailyCny?.textContent = `¥${fiatValues.dailyCNY.toFixed(2)}`;
+    domElements.monthlyUsd?.textContent = `$${fiatValues.monthlyUSD.toFixed(2)}`;
+    domElements.monthlyCny?.textContent = `¥${fiatValues.monthlyCNY.toFixed(2)}`;
+    domElements.annualUsd?.textContent = `$${fiatValues.annualUSD.toFixed(2)}`;
+    domElements.annualCny?.textContent = `¥${fiatValues.annualCNY.toFixed(2)}`;
+
+    // Show the results container
+    domElements.resultsContainer?.classList.remove('hidden');
+}
+
+
+// --- Main Calculation Function ---
+function calculateRewards() {
+    const userInputs = getUserStakingInputs();
+    saveCurrentInputs(); // Save these inputs to localStorage and currentInputs variable
+
+    const stakedAmounts = calculateStakedAmounts(userInputs);
+    const individualRewards = calculateIndividualRewards(userInputs, currentData);
+    const totalRewards = calculateTotalRewards(individualRewards);
+    const fiatValues = calculateFiatValues(totalRewards, currentData.apePrice, currentData.usdCnyRate);
+
+    updateResultsDisplay(userInputs, stakedAmounts, individualRewards, totalRewards, fiatValues);
+}
+
+
 function updatePoolBreakdown(poolName, inputAmount, dailyRewards, shouldShow, unit) {
-    const breakdownElement = document.getElementById(`${poolName}-breakdown`);
-    const detailsElement = document.getElementById(`${poolName}-breakdown-details`);
-    const dailyElement = document.getElementById(`${poolName}-daily-breakdown`);
-    const monthlyElement = document.getElementById(`${poolName}-monthly-breakdown`);
-    const annualElement = document.getElementById(`${poolName}-annual-breakdown`);
+    const breakdownElement = domElements[`${poolName}Breakdown`];
+    const detailsElement = domElements[`${poolName}BreakdownDetails`];
+    const dailyElement = domElements[`${poolName}DailyBreakdown`];
+    const monthlyElement = domElements[`${poolName}MonthlyBreakdown`];
+    const annualElement = domElements[`${poolName}AnnualBreakdown`];
     
+    if (!breakdownElement || !detailsElement || !dailyElement || !monthlyElement || !annualElement) {
+        console.warn(`DOM elements for ${poolName} breakdown not found.`);
+        return;
+    }
+
     if (shouldShow) {
-        // Show the breakdown item
-        breakdownElement.style.display = 'block';
-        
-        // Update details
+        breakdownElement.classList.remove('hidden');
         if (poolName === 'ape') {
             detailsElement.textContent = `${inputAmount.toLocaleString()} ${unit}`;
         } else {
             detailsElement.textContent = `${inputAmount} ${unit}`;
         }
-        
-        // Update rewards
         dailyElement.textContent = `${dailyRewards.toFixed(4)} APE`;
-        monthlyElement.textContent = `${(dailyRewards * 30).toFixed(2)} APE`;
-        annualElement.textContent = `${(dailyRewards * 365).toFixed(2)} APE`;
+        monthlyElement.textContent = `${(dailyRewards * DAYS_IN_MONTH).toFixed(2)} APE`;
+        annualElement.textContent = `${(dailyRewards * DAYS_IN_YEAR).toFixed(2)} APE`;
     } else {
-        // Hide the breakdown item
-        breakdownElement.style.display = 'none';
+        breakdownElement.classList.add('hidden');
     }
 }
 
 // Listener setup for staking inputs (APE amount, NFT counts)
 function setupStakingInputListeners() {
     const stakingInputs = [
-        document.getElementById('ape-input'),
-        document.getElementById('bayc-input'),
-        document.getElementById('mayc-input'),
-        document.getElementById('bakc-input')
+        domElements.apeInput, domElements.baycInput,
+        domElements.maycInput, domElements.bakcInput
     ];
     let debounceTimeoutId;
 
-    stakingInputs.forEach(input => {
-        if (!input) return; // Guard against missing elements if HTML changes
+    stakingInputs.forEach(inputElement => { // Renamed 'input' to 'inputElement' for clarity
+        if (!inputElement) return;
 
-        // Basic input sanitization (non-negative, integers for NFTs, decimals for APE)
-        input.addEventListener('input', function() {
+        inputElement.addEventListener('input', function() {
             if (this.value < 0) this.value = 0;
-            if (this.id !== 'ape-input') {
+            // Ensure 'ape-input' allows decimals, others are integers
+            if (this.id !== domElements.apeInput.id) {
                 this.value = Math.floor(this.value);
             }
         });
         
-        // Debounced listener for calculations
-        input.addEventListener('input', function() {
+        inputElement.addEventListener('input', function() {
             clearTimeout(debounceTimeoutId);
             debounceTimeoutId = setTimeout(() => {
                 saveCurrentInputs();
-                // Always calculate, even if inputs are zero, to clear/update results display
                 calculateRewards();
-            }, 500);
+            }, DEBOUNCE_TIME_STAKING_INPUTS_MS);
         });
     });
 }
 
 // Listener setup for configuration panel inputs
 function setupConfigInputListeners() {
-    const configInputIds = [
-        'config-ape-apy', 'config-bayc-daily', 'config-mayc-daily',
-        'config-bakc-daily', 'config-ape-price', 'config-usd-cny'
-    ];
+    const configMapping = {
+        'config-ape-apy': {
+            path: ['ape', 'apy'],
+            defaultPath: ['ape', 'apy'],
+            isNumeric: true
+        },
+        'config-bayc-daily': {
+            path: ['bayc', 'dailyRewardsFull'],
+            defaultPath: ['bayc', 'dailyRewardsFull'],
+            dependentAprConfig: { path: ['bayc', 'apr'], nftKey: 'bayc' },
+            isNumeric: true
+        },
+        'config-mayc-daily': {
+            path: ['mayc', 'dailyRewardsFull'],
+            defaultPath: ['mayc', 'dailyRewardsFull'],
+            dependentAprConfig: { path: ['mayc', 'apr'], nftKey: 'mayc' },
+            isNumeric: true
+        },
+        'config-bakc-daily': {
+            path: ['bakc', 'dailyRewardsFull'],
+            defaultPath: ['bakc', 'dailyRewardsFull'],
+            dependentAprConfig: { path: ['bakc', 'apr'], nftKey: 'bakc' },
+            isNumeric: true
+        },
+        'config-ape-price': {
+            path: ['apePrice'],
+            defaultPath: ['apePrice'],
+            isNumeric: true
+        },
+        'config-usd-cny': {
+            path: ['usdCnyRate'],
+            defaultPath: ['usdCnyRate'],
+            isNumeric: true
+        }
+    };
 
-    configInputIds.forEach(id => {
-        const input = document.getElementById(id);
-        if (!input) return; // Guard
+    Object.keys(configMapping).forEach(id => {
+        const inputElement = domElements[id]; // Use the ID directly as cached in cacheDomElements
+
+        if (!inputElement) {
+            console.warn(`Configuration input element not found in domElements: ${id}`);
+            return;
+        }
 
         let debounceTimeoutId;
 
-        // Basic input sanitization (non-negative)
-        input.addEventListener('input', function() {
-            if (this.value < 0) this.value = 0;
-        });
+        if (configMapping[id].isNumeric) {
+            inputElement.addEventListener('input', function() {
+                if (this.value < 0) this.value = 0;
+            });
+        }
 
-        // Debounced listener for updating currentData and UI
-        input.addEventListener('input', function() {
+        inputElement.addEventListener('input', function() {
             clearTimeout(debounceTimeoutId);
             debounceTimeoutId = setTimeout(() => {
-                const value = parseFloat(this.value);
-                let updated = false;
+                const config = configMapping[this.id];
+                let valueToSet;
 
-                switch (this.id) {
-                    case 'config-ape-apy':
-                        currentData.ape.apy = isNaN(value) ? DEFAULT_DATA.ape.apy : value;
-                        updated = true;
-                        break;
-                    case 'config-bayc-daily':
-                        currentData.bayc.dailyRewardsFull = isNaN(value) ? DEFAULT_DATA.bayc.dailyRewardsFull : value;
-                        currentData.bayc.apr = calculateAPRFromDaily(currentData.bayc.dailyRewardsFull, APE_PER_NFT.bayc);
-                        updated = true;
-                        break;
-                    case 'config-mayc-daily':
-                        currentData.mayc.dailyRewardsFull = isNaN(value) ? DEFAULT_DATA.mayc.dailyRewardsFull : value;
-                        currentData.mayc.apr = calculateAPRFromDaily(currentData.mayc.dailyRewardsFull, APE_PER_NFT.mayc);
-                        updated = true;
-                        break;
-                    case 'config-bakc-daily':
-                        currentData.bakc.dailyRewardsFull = isNaN(value) ? DEFAULT_DATA.bakc.dailyRewardsFull : value;
-                        currentData.bakc.apr = calculateAPRFromDaily(currentData.bakc.dailyRewardsFull, APE_PER_NFT.bakc);
-                        updated = true;
-                        break;
-                    case 'config-ape-price':
-                        currentData.apePrice = isNaN(value) ? DEFAULT_DATA.apePrice : value;
-                        updated = true;
-                        break;
-                    case 'config-usd-cny':
-                        currentData.usdCnyRate = isNaN(value) ? DEFAULT_DATA.usdCnyRate : value;
-                        updated = true;
-                        break;
+                if (config.isNumeric) {
+                    const parsedValue = parseFloat(this.value);
+                    valueToSet = isNaN(parsedValue) ? getValueByPath(DEFAULT_DATA, config.defaultPath) : parsedValue;
+                } else {
+                    valueToSet = this.value;
                 }
 
-                if (updated) {
-                    if (saveDataToLocalStorage(currentData)) {
-                        updateDataStatus('Manual Input', new Date().toLocaleString());
-                        updateAllDisplays(); // Refresh headers, pool stats, etc.
-                        if (hasCalculationInputs()) {
-                            calculateRewards(); // Recalculate results if user has staking inputs
-                        }
-                         // No specific notification for each config change to avoid being too noisy.
-                         // Status update is sufficient.
-                    } else {
-                        showNotification('Error saving updated configuration data.', 'error');
-                    }
+                setValueByPath(currentData, config.path, valueToSet);
+
+                if (config.dependentAprConfig) {
+                    const dailyRewardsValue = valueToSet;
+                    const newApr = calculateAPRFromDaily(dailyRewardsValue, APE_PER_NFT[config.dependentAprConfig.nftKey]);
+                    setValueByPath(currentData, config.dependentAprConfig.path, newApr);
                 }
-            }, 750); // Slightly longer debounce for config inputs
+
+                if (saveDataToLocalStorage(currentData)) {
+                    updateDataStatus('Manual Input', new Date().toLocaleString());
+                    updateAllDisplays();
+                    if (hasCalculationInputs()) calculateRewards();
+                } else {
+                    showNotification('Error saving updated configuration data.', 'error');
+                }
+            }, DEBOUNCE_TIME_CONFIG_INPUTS_MS);
         });
     });
+}
+
+// Helper functions for nested object property access (can be moved to a utility section if needed)
+function setValueByPath(obj, path, value) {
+    let current = obj;
+    for (let i = 0; i < path.length - 1; i++) {
+        if (!current[path[i]]) current[path[i]] = {}; // Create path if it doesn't exist
+        current = current[path[i]];
+    }
+    current[path[path.length - 1]] = value;
+}
+
+function getValueByPath(obj, path) {
+    return path.reduce((acc, part) => acc && acc[part], obj);
 }
 
 
 // Event listeners setup for buttons
 function setupButtonEventListeners() {
-    const autoFetchButton = document.getElementById('auto-fetch-btn');
-    if (autoFetchButton) {
-        autoFetchButton.addEventListener('click', fetchLiveData);
-    }
+    domElements.autoFetchButton?.addEventListener('click', fetchLiveData);
     // Other buttons were removed, so their listeners are not needed.
 }
 
-// Initialization
-function initializeApp() {
-    // Load saved data or use defaults
+// --- Initialization Sub-functions ---
+
+function cacheDomElements() {
+    // Staking Inputs
+    domElements.apeInput = document.getElementById('ape-input');
+    domElements.baycInput = document.getElementById('bayc-input');
+    domElements.maycInput = document.getElementById('mayc-input');
+    domElements.bakcInput = document.getElementById('bakc-input');
+
+    // Header Stats
+    domElements.headerApeApy = document.getElementById('header-ape-apy');
+    domElements.headerBaycApr = document.getElementById('header-bayc-apr');
+    domElements.headerMaycApr = document.getElementById('header-mayc-apr');
+    domElements.headerBakcApr = document.getElementById('header-bakc-apr');
+    domElements.headerApePrice = document.getElementById('header-ape-price');
+    domElements.headerUsdCny = document.getElementById('header-usd-cny');
+
+    // Pool Stats
+    domElements.apeApy = document.getElementById('ape-apy');
+    domElements.apeDailyRate = document.getElementById('ape-daily-rate');
+    domElements.baycDailyRewards = document.getElementById('bayc-daily-rewards');
+    domElements.baycApr = document.getElementById('bayc-apr');
+    domElements.maycDailyRewards = document.getElementById('mayc-daily-rewards');
+    domElements.maycApr = document.getElementById('mayc-apr');
+    domElements.bakcDailyRewards = document.getElementById('bakc-daily-rewards');
+    domElements.bakcApr = document.getElementById('bakc-apr');
+
+    // Result Display Prices
+    domElements.displayApePrice = document.getElementById('display-ape-price');
+    domElements.displayUsdCny = document.getElementById('display-usd-cny');
+
+    // Config Inputs (using original IDs as keys for direct mapping in setupConfigInputListeners)
+    const configIds = [
+        'config-ape-apy', 'config-bayc-daily', 'config-mayc-daily',
+        'config-bakc-daily', 'config-ape-price', 'config-usd-cny'
+    ];
+    configIds.forEach(id => domElements[id] = document.getElementById(id));
+
+
+    // Data Status
+    domElements.dataSourceStatus = document.getElementById('data-source-status');
+    domElements.lastUpdatedStatus = document.getElementById('last-updated-status');
+
+    // Results Container & Breakdown
+    domElements.resultsContainer = document.getElementById('results-container'); // Cached
+    domElements.baycApeStaked = document.getElementById('bayc-ape-staked');
+    domElements.maycApeStaked = document.getElementById('mayc-ape-staked');
+    domElements.bakcApeStaked = document.getElementById('bakc-ape-staked');
+    domElements.directApeStaked = document.getElementById('direct-ape-staked');
+    domElements.totalApeStaked = document.getElementById('total-ape-staked');
+
+    // Pool Breakdown sections
+    ['ape', 'bayc', 'mayc', 'bakc'].forEach(pool => {
+        domElements[`${pool}Breakdown`] = document.getElementById(`${pool}-breakdown`);
+        domElements[`${pool}BreakdownDetails`] = document.getElementById(`${pool}-breakdown-details`);
+        domElements[`${pool}DailyBreakdown`] = document.getElementById(`${pool}-daily-breakdown`);
+        domElements[`${pool}MonthlyBreakdown`] = document.getElementById(`${pool}-monthly-breakdown`);
+        domElements[`${pool}AnnualBreakdown`] = document.getElementById(`${pool}-annual-breakdown`);
+    });
+
+    // Total Rewards
+    domElements.dailyRewards = document.getElementById('daily-rewards');
+    domElements.monthlyRewards = document.getElementById('monthly-rewards');
+    domElements.annualRewards = document.getElementById('annual-rewards');
+    domElements.dailyUsd = document.getElementById('daily-usd');
+    domElements.dailyCny = document.getElementById('daily-cny');
+    domElements.monthlyUsd = document.getElementById('monthly-usd');
+    domElements.monthlyCny = document.getElementById('monthly-cny');
+    domElements.annualUsd = document.getElementById('annual-usd');
+    domElements.annualCny = document.getElementById('annual-cny');
+
+    // Buttons
+    domElements.autoFetchButton = document.getElementById('auto-fetch-btn');
+}
+
+
+function loadInitialData() {
     const savedData = loadDataFromLocalStorage();
     if (savedData) {
         currentData = savedData;
         updateDataStatus('Saved Data', 'Loaded from browser storage');
     } else {
-        currentData = { ...DEFAULT_DATA }; // Use hardcoded defaults if nothing in localStorage
+        currentData = { ...DEFAULT_DATA }; // Use hardcoded defaults
         updateDataStatus('Default Values', 'Using system defaults');
     }
-    
-    // Load saved calculation inputs (ape amount, nft counts) or use defaults
-    const hasInputs = loadSavedInputs();
-    
-    // Update all displays with currentData (either loaded or default)
-    updateConfigInputs(); // Populate config panel inputs from currentData
-    updateAllDisplays();  // Update header, pool stats etc.
-    
-    // Setup event listeners
+}
+
+function loadInitialInputs() {
+    // loadSavedInputs() already updates currentInputs and UI fields
+    return loadSavedInputs();
+}
+
+function setupAllEventListeners() {
     setupButtonEventListeners();
     setupStakingInputListeners();
     setupConfigInputListeners();
-    
+}
+
+function performInitialUIDisplayAndCalculations(hasInputs) {
+    updateConfigInputs(); // Populate config panel inputs from currentData
+    updateAllDisplays();  // Update header, pool stats etc.
+
     // Auto-calculate if there are saved calculation inputs
-    if (hasInputs && hasCalculationInputs()) {
+    if (hasInputs && hasCalculationInputs()) { // hasCalculationInputs checks current DOM values
         calculateRewards();
     }
-    
-    // Show welcome notification and auto-fetch data
+}
+
+const AUTO_FETCH_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+const WELCOME_MESSAGE_DELAY_MS = 1000;
+const AUTO_FETCH_DELAY_MS = 2000; // Delay after welcome message
+
+function initiateDelayedAutoFetch(hasInputs) {
     setTimeout(() => {
         const inputMessage = hasInputs ? 
             'APE Calculator loaded with your saved inputs! 💾' : 
             'APE Calculator loaded! Your inputs will be automatically saved. 🚀';
         showNotification(inputMessage, 'info');
         
-        // Auto-fetch live data after a brief delay (only if data is older than 1 hour)
         const lastUpdated = localStorage.getItem('apeCalculatorLastUpdate');
-        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+        const now = Date.now();
         
-        if (!lastUpdated || parseInt(lastUpdated) < oneHourAgo) {
+        if (!lastUpdated || (now - parseInt(lastUpdated)) > AUTO_FETCH_INTERVAL_MS) {
             setTimeout(() => {
-                showNotification('Auto-fetching latest data... 🔄', 'info');
+                // showNotification('Auto-fetching latest data... 🔄', 'info'); // fetchLiveData shows its own notification
                 fetchLiveData().then(success => {
                     if (success) {
-                        localStorage.setItem('apeCalculatorLastUpdate', Date.now().toString());
+                        localStorage.setItem('apeCalculatorLastUpdate', now.toString());
                     }
                 });
-            }, 2000);
+            }, AUTO_FETCH_DELAY_MS);
         }
-    }, 1000);
+    }, WELCOME_MESSAGE_DELAY_MS);
+}
+
+// --- Main Initialization Function ---
+function initializeApp() {
+    cacheDomElements(); // Cache all DOM elements first
+    loadInitialData();
+    const inputsWereLoaded = loadInitialInputs();
+
+    setupAllEventListeners();
+    performInitialUIDisplayAndCalculations(inputsWereLoaded);
+    initiateDelayedAutoFetch(inputsWereLoaded);
 }
 
 // Run when DOM is loaded
