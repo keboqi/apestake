@@ -462,30 +462,30 @@ function setupConfigInputListeners() {
 
                 switch (this.id) {
                     case 'config-ape-apy':
-                        currentData.ape.apy = value || DEFAULT_DATA.ape.apy;
+                        currentData.ape.apy = isNaN(value) ? DEFAULT_DATA.ape.apy : value;
                         updated = true;
                         break;
                     case 'config-bayc-daily':
-                        currentData.bayc.dailyRewardsFull = value || DEFAULT_DATA.bayc.dailyRewardsFull;
+                        currentData.bayc.dailyRewardsFull = isNaN(value) ? DEFAULT_DATA.bayc.dailyRewardsFull : value;
                         currentData.bayc.apr = calculateAPRFromDaily(currentData.bayc.dailyRewardsFull, APE_PER_NFT.bayc);
                         updated = true;
                         break;
                     case 'config-mayc-daily':
-                        currentData.mayc.dailyRewardsFull = value || DEFAULT_DATA.mayc.dailyRewardsFull;
+                        currentData.mayc.dailyRewardsFull = isNaN(value) ? DEFAULT_DATA.mayc.dailyRewardsFull : value;
                         currentData.mayc.apr = calculateAPRFromDaily(currentData.mayc.dailyRewardsFull, APE_PER_NFT.mayc);
                         updated = true;
                         break;
                     case 'config-bakc-daily':
-                        currentData.bakc.dailyRewardsFull = value || DEFAULT_DATA.bakc.dailyRewardsFull;
+                        currentData.bakc.dailyRewardsFull = isNaN(value) ? DEFAULT_DATA.bakc.dailyRewardsFull : value;
                         currentData.bakc.apr = calculateAPRFromDaily(currentData.bakc.dailyRewardsFull, APE_PER_NFT.bakc);
                         updated = true;
                         break;
                     case 'config-ape-price':
-                        currentData.apePrice = value || DEFAULT_DATA.apePrice;
+                        currentData.apePrice = isNaN(value) ? DEFAULT_DATA.apePrice : value;
                         updated = true;
                         break;
                     case 'config-usd-cny':
-                        currentData.usdCnyRate = value || DEFAULT_DATA.usdCnyRate;
+                        currentData.usdCnyRate = isNaN(value) ? DEFAULT_DATA.usdCnyRate : value;
                         updated = true;
                         break;
                 }
