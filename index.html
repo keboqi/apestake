@@ -65,8 +65,9 @@
                     <h3 class="config-item-title">$APE Staking APY</h3>
                     <div class="config-source">
                         <a href="https://trackmyyield.xyz/" target="_blank" class="source-link">
-                            📈 Get from trackmyyield.xyz
+                            📈 trackmyyield.xyz
                         </a>
+                        <span class="source-info" id="config-source-ape-apy">Source: N/A</span>
                     </div>
                     <div class="config-input-group">
                         <label for="config-ape-apy">APY (%):</label>
@@ -79,8 +80,13 @@
                     <h3 class="config-item-title">NFT Staking Rewards</h3>
                     <div class="config-source">
                         <a href="https://apectrl.com/statistics/ape-staking" target="_blank" class="source-link">
-                            🦍 Get from apectrl.com
+                            🦍 apectrl.com
                         </a>
+                        <ul class="source-list">
+                            <li id="config-source-nft-bayc">BAYC: N/A</li>
+                            <li id="config-source-nft-mayc">MAYC: N/A</li>
+                            <li id="config-source-nft-bakc">BAKC: N/A</li>
+                        </ul>
                     </div>
                     <div class="config-inputs-row">
                         <div class="config-input-group">
@@ -103,11 +109,15 @@
                     <h3 class="config-item-title">Price Data</h3>
                     <div class="config-source">
                         <a href="https://coinmarketcap.com/currencies/apecoin-ape/" target="_blank" class="source-link">
-                            💰 APE Price from CoinMarketCap
+                            💰 CoinMarketCap
                         </a>
                         <a href="https://www.bloomberg.com/quote/USDCNY:CUR" target="_blank" class="source-link">
-                            💱 USD/CNY from Bloomberg
+                            💱 Bloomberg
                         </a>
+                        <ul class="source-list">
+                            <li id="config-source-ape-price">APE Price: N/A</li>
+                            <li id="config-source-usd-cny">USD/CNY Rate: N/A</li>
+                        </ul>
                     </div>
                     <div class="config-inputs-row">
                         <div class="config-input-group">
@@ -408,11 +418,13 @@
         
         <div class="data-source">
             <p><strong>Data Sources:</strong></p>
-            <ul class="source-list">
-                <li><a href="https://apectrl.com/statistics/ape-staking" target="_blank">apectrl.com - NFT Staking Rewards</a></li>
-                <li><a href="https://trackmyyield.xyz/" target="_blank">trackmyyield.xyz - APE Staking APY</a></li>
-                <li><a href="https://coinmarketcap.com/currencies/apecoin-ape/" target="_blank">CoinMarketCap - APE Price</a></li>
-                <li><a href="https://www.bloomberg.com/quote/USDCNY:CUR" target="_blank">Bloomberg - USD/CNY Rate</a></li>
+            <ul id="data-source-list" class="source-list">
+                <li id="source-ape-price">APE Price: N/A</li>
+                <li id="source-nft-staking-bayc">BAYC Staking: N/A</li>
+                <li id="source-nft-staking-mayc">MAYC Staking: N/A</li>
+                <li id="source-nft-staking-bakc">BAKC Staking: N/A</li>
+                <li id="source-ape-apy">APE APY: N/A</li>
+                <li id="source-usd-cny">USD/CNY Rate: N/A</li>
             </ul>
             <p><em>Use the Data Configuration panel above to manually update values from these sources.</em></p>
         </div>

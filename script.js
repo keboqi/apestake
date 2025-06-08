@@ -189,6 +189,24 @@ function updateDataStatus(source, timestamp) {
     if (domElements.lastUpdatedStatus) domElements.lastUpdatedStatus.textContent = timestamp;
 }
 
+function updateDataSourceList(sources = {}) {
+    if (domElements.sourceApePrice) domElements.sourceApePrice.textContent = `APE Price: ${sources.apePrice || 'N/A'}`;
+    if (domElements.sourceNftBayc) domElements.sourceNftBayc.textContent = `BAYC Staking: ${sources.nftStakingBAYC || 'N/A'}`;
+    if (domElements.sourceNftMayc) domElements.sourceNftMayc.textContent = `MAYC Staking: ${sources.nftStakingMAYC || 'N/A'}`;
+    if (domElements.sourceNftBakc) domElements.sourceNftBakc.textContent = `BAKC Staking: ${sources.nftStakingBAKC || 'N/A'}`;
+    if (domElements.sourceApeApy) domElements.sourceApeApy.textContent = `APE APY: ${sources.apeApy || 'N/A'}`;
+    if (domElements.sourceUsdCny) domElements.sourceUsdCny.textContent = `USD/CNY Rate: ${sources.usdCnyRate || 'N/A'}`;
+}
+
+function updateConfigSourceInfo(sources = {}) {
+    if (domElements.configSourceApeApy) domElements.configSourceApeApy.textContent = `Source: ${sources.apeApy || 'N/A'}`;
+    if (domElements.configSourceNftBayc) domElements.configSourceNftBayc.textContent = `BAYC: ${sources.nftStakingBAYC || 'N/A'}`;
+    if (domElements.configSourceNftMayc) domElements.configSourceNftMayc.textContent = `MAYC: ${sources.nftStakingMAYC || 'N/A'}`;
+    if (domElements.configSourceNftBakc) domElements.configSourceNftBakc.textContent = `BAKC: ${sources.nftStakingBAKC || 'N/A'}`;
+    if (domElements.configSourceApePrice) domElements.configSourceApePrice.textContent = `APE Price: ${sources.apePrice || 'N/A'}`;
+    if (domElements.configSourceUsdCny) domElements.configSourceUsdCny.textContent = `USD/CNY Rate: ${sources.usdCnyRate || 'N/A'}`;
+}
+
 // Notification system
 function showNotification(message, type = 'info') {
     // Create notification element
@@ -338,6 +356,8 @@ async function fetchLiveData() {
                     overallDataSource = 'Fetched Data (Source Info Missing)';
                 }
 
+                updateDataSourceList(data.dataSources);
+                updateConfigSourceInfo(data.dataSources);
                 updateDataStatus(overallDataSource, data.timestamp ? new Date(data.timestamp).toLocaleString() : new Date().toLocaleString());
                 showNotification('✅ Data updated!', 'success'); // General success message
                 
@@ -722,6 +742,22 @@ function cacheDomElements() {
     domElements.dataSourceStatus = document.getElementById('data-source-status');
     domElements.lastUpdatedStatus = document.getElementById('last-updated-status');
 
+    // Data Source list items
+    domElements.sourceApePrice = document.getElementById('source-ape-price');
+    domElements.sourceNftBayc = document.getElementById('source-nft-staking-bayc');
+    domElements.sourceNftMayc = document.getElementById('source-nft-staking-mayc');
+    domElements.sourceNftBakc = document.getElementById('source-nft-staking-bakc');
+    domElements.sourceApeApy = document.getElementById('source-ape-apy');
+    domElements.sourceUsdCny = document.getElementById('source-usd-cny');
+
+    // Config panel source info
+    domElements.configSourceApeApy = document.getElementById('config-source-ape-apy');
+    domElements.configSourceNftBayc = document.getElementById('config-source-nft-bayc');
+    domElements.configSourceNftMayc = document.getElementById('config-source-nft-mayc');
+    domElements.configSourceNftBakc = document.getElementById('config-source-nft-bakc');
+    domElements.configSourceApePrice = document.getElementById('config-source-ape-price');
+    domElements.configSourceUsdCny = document.getElementById('config-source-usd-cny');
+
     // Results Container & Breakdown
     domElements.resultsContainer = document.getElementById('results-container'); // Cached
     domElements.baycApeStaked = document.getElementById('bayc-ape-staked');
@@ -760,9 +796,13 @@ function loadInitialData() {
     if (savedData) {
         currentData = savedData;
         updateDataStatus('Saved Data', 'Loaded from browser storage');
+        updateDataSourceList();
+        updateConfigSourceInfo();
     } else {
         currentData = { ...DEFAULT_DATA }; // Use hardcoded defaults
         updateDataStatus('Default Values', 'Using system defaults');
+        updateDataSourceList();
+        updateConfigSourceInfo();
     }
 }
 
