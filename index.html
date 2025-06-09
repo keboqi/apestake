@@ -57,16 +57,12 @@
         <!-- Data Configuration Panel -->
         <div class="data-config-panel">
             <h2 class="config-title">📊 Data Configuration</h2>
-            <p class="config-description">Update the latest values manually using the data sources below:</p>
+            <p class="config-description">Update the latest values manually:</p>
             
             <div class="config-grid">
                 <!-- APE Staking Data -->
                 <div class="config-item">
                     <h3 class="config-item-title">$APE Staking APY</h3>
-                    <div class="config-source">
-                        <span class="source-link">📈 trackmyyield.xyz</span>
-                        <span class="source-info" id="config-source-ape-apy">Source: N/A</span>
-                    </div>
                     <div class="config-input-group">
                         <label for="config-ape-apy">APY (%):</label>
                         <input type="number" id="config-ape-apy" step="0.1" min="0" max="100" placeholder="6.5">
@@ -76,10 +72,6 @@
                 <!-- NFT Staking Data -->
                 <div class="config-item">
                     <h3 class="config-item-title">NFT Staking Rewards</h3>
-                    <div class="config-source">
-                        <span class="source-link">🦍 apectrl.com</span>
-                        <span class="source-info" id="config-source-nft">Source: N/A</span>
-                    </div>
                     <div class="config-inputs-row">
                         <div class="config-input-group">
                             <label for="config-bayc-daily">BAYC Daily (APE):</label>
@@ -99,14 +91,6 @@
                 <!-- Price Data -->
                 <div class="config-item">
                     <h3 class="config-item-title">Price Data</h3>
-                    <div class="config-source">
-                        <span class="source-link">💰 CoinMarketCap</span>
-                        <span class="source-link">💱 Bloomberg</span>
-                        <ul class="source-list">
-                            <li id="config-source-ape-price">APE Price: N/A</li>
-                            <li id="config-source-usd-cny">USD/CNY Rate: N/A</li>
-                        </ul>
-                    </div>
                     <div class="config-inputs-row">
                         <div class="config-input-group">
                             <label for="config-ape-price">APE Price ($):</label>
@@ -135,6 +119,15 @@
                     <span class="status-label">Last Updated:</span>
                     <span id="last-updated-status" class="status-value">Never</span>
                 </div>
+            </div>
+            <div class="data-source-list">
+                <p><strong>Data Sources:</strong></p>
+                <ul id="data-source-list" class="source-list">
+                    <li id="source-ape-price">APE Price: N/A</li>
+                    <li id="source-nft-staking">NFT Staking: N/A</li>
+                    <li id="source-ape-apy">APE APY: N/A</li>
+                    <li id="source-usd-cny">USD/CNY Rate: N/A</li>
+                </ul>
             </div>
         </div>
         
@@ -404,16 +397,6 @@
             </div>
         </div>
         
-        <div class="data-source">
-            <p><strong>Data Sources:</strong></p>
-            <ul id="data-source-list" class="source-list">
-                <li id="source-ape-price">APE Price: N/A</li>
-                <li id="source-nft-staking">NFT Staking: N/A</li>
-                <li id="source-ape-apy">APE APY: N/A</li>
-                <li id="source-usd-cny">USD/CNY Rate: N/A</li>
-            </ul>
-            <p><em>Use the Data Configuration panel above to manually update values from these sources.</em></p>
-        </div>
     </div>
 
     <script src="script.js"></script>
