@@ -616,9 +616,7 @@ export async function onRequest(context) {
     results.detailedStatus = statusDetails; // Reflects KV Cache source if used
     results.dataSources = { // Repopulate based on final statusDetails
       apePrice: statusDetails.apePrice.source,
-      nftStakingBAYC: statusDetails.bayc.source,
-      nftStakingMAYC: statusDetails.mayc.source,
-      nftStakingBAKC: statusDetails.bakc.source,
+      nftStaking: statusDetails.bayc.source,
       apeApy: statusDetails.apeApy.source,
       usdCnyRate: statusDetails.usdCnyRate.source
     };
