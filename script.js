@@ -191,18 +191,14 @@ function updateDataStatus(source, timestamp) {
 
 function updateDataSourceList(sources = {}) {
     if (domElements.sourceApePrice) domElements.sourceApePrice.textContent = `APE Price: ${sources.apePrice || 'N/A'}`;
-    if (domElements.sourceNftBayc) domElements.sourceNftBayc.textContent = `BAYC Staking: ${sources.nftStakingBAYC || 'N/A'}`;
-    if (domElements.sourceNftMayc) domElements.sourceNftMayc.textContent = `MAYC Staking: ${sources.nftStakingMAYC || 'N/A'}`;
-    if (domElements.sourceNftBakc) domElements.sourceNftBakc.textContent = `BAKC Staking: ${sources.nftStakingBAKC || 'N/A'}`;
+    if (domElements.sourceNftStaking) domElements.sourceNftStaking.textContent = `NFT Staking: ${sources.nftStaking || 'N/A'}`;
     if (domElements.sourceApeApy) domElements.sourceApeApy.textContent = `APE APY: ${sources.apeApy || 'N/A'}`;
     if (domElements.sourceUsdCny) domElements.sourceUsdCny.textContent = `USD/CNY Rate: ${sources.usdCnyRate || 'N/A'}`;
 }
 
 function updateConfigSourceInfo(sources = {}) {
     if (domElements.configSourceApeApy) domElements.configSourceApeApy.textContent = `Source: ${sources.apeApy || 'N/A'}`;
-    if (domElements.configSourceNftBayc) domElements.configSourceNftBayc.textContent = `BAYC: ${sources.nftStakingBAYC || 'N/A'}`;
-    if (domElements.configSourceNftMayc) domElements.configSourceNftMayc.textContent = `MAYC: ${sources.nftStakingMAYC || 'N/A'}`;
-    if (domElements.configSourceNftBakc) domElements.configSourceNftBakc.textContent = `BAKC: ${sources.nftStakingBAKC || 'N/A'}`;
+    if (domElements.configSourceNft) domElements.configSourceNft.textContent = `Source: ${sources.nftStaking || 'N/A'}`;
     if (domElements.configSourceApePrice) domElements.configSourceApePrice.textContent = `APE Price: ${sources.apePrice || 'N/A'}`;
     if (domElements.configSourceUsdCny) domElements.configSourceUsdCny.textContent = `USD/CNY Rate: ${sources.usdCnyRate || 'N/A'}`;
 }
@@ -329,9 +325,7 @@ async function fetchLiveData() {
                     const criticalSourceValues = [
                         sources.apePrice,
                         sources.apeApy,
-                        sources.nftStakingBAYC, // Names from dataSources object in fetch-data.js
-                        sources.nftStakingMAYC,
-                        sources.nftStakingBAKC
+                        sources.nftStaking
                     ].filter(Boolean); // Filter out undefined if some sources are missing
 
                     if (criticalSourceValues.length > 0) { // Only if we have some source info
@@ -744,17 +738,13 @@ function cacheDomElements() {
 
     // Data Source list items
     domElements.sourceApePrice = document.getElementById('source-ape-price');
-    domElements.sourceNftBayc = document.getElementById('source-nft-staking-bayc');
-    domElements.sourceNftMayc = document.getElementById('source-nft-staking-mayc');
-    domElements.sourceNftBakc = document.getElementById('source-nft-staking-bakc');
+    domElements.sourceNftStaking = document.getElementById('source-nft-staking');
     domElements.sourceApeApy = document.getElementById('source-ape-apy');
     domElements.sourceUsdCny = document.getElementById('source-usd-cny');
 
     // Config panel source info
     domElements.configSourceApeApy = document.getElementById('config-source-ape-apy');
-    domElements.configSourceNftBayc = document.getElementById('config-source-nft-bayc');
-    domElements.configSourceNftMayc = document.getElementById('config-source-nft-mayc');
-    domElements.configSourceNftBakc = document.getElementById('config-source-nft-bakc');
+    domElements.configSourceNft = document.getElementById('config-source-nft');
     domElements.configSourceApePrice = document.getElementById('config-source-ape-price');
     domElements.configSourceUsdCny = document.getElementById('config-source-usd-cny');
 
