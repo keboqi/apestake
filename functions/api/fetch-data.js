@@ -155,7 +155,7 @@ export async function onRequest(context) {
     let foundMaycOnChain = false;
     let foundBakcOnChain = false;
 
-    try { // 1. Primary: ApeChain On-Chain (`getAllStakes`)
+    try { // 1. Primary: ApeChain on-chain data (`getAllStakes`)
       const payload = {
         jsonrpc: '2.0',
         id: 365061061772180, // Use working ID from successful calls
@@ -214,13 +214,13 @@ export async function onRequest(context) {
         }
 
         if (poolId === 1) { // BAYC
-          statusDetails.bayc = { daily: parseFloat(dailyRewardApe.toFixed(2)), apr: parseFloat(apr.toFixed(2)), source: 'ApeChain On-Chain', error: null };
+          statusDetails.bayc = { daily: parseFloat(dailyRewardApe.toFixed(2)), apr: parseFloat(apr.toFixed(2)), source: 'ApeChain on-chain data', error: null };
           foundBaycOnChain = true;
         } else if (poolId === 2) { // MAYC
-          statusDetails.mayc = { daily: parseFloat(dailyRewardApe.toFixed(2)), apr: parseFloat(apr.toFixed(2)), source: 'ApeChain On-Chain', error: null };
+          statusDetails.mayc = { daily: parseFloat(dailyRewardApe.toFixed(2)), apr: parseFloat(apr.toFixed(2)), source: 'ApeChain on-chain data', error: null };
           foundMaycOnChain = true;
         } else if (poolId === 3) { // BAKC
-          statusDetails.bakc = { daily: parseFloat(dailyRewardApe.toFixed(2)), apr: parseFloat(apr.toFixed(2)), source: 'ApeChain On-Chain', error: null };
+          statusDetails.bakc = { daily: parseFloat(dailyRewardApe.toFixed(2)), apr: parseFloat(apr.toFixed(2)), source: 'ApeChain on-chain data', error: null };
           foundBakcOnChain = true;
         }
       }
@@ -334,9 +334,9 @@ export async function onRequest(context) {
     // --- End NFT Data Fetching ---
 
     // --- Start apeApy Fetching ---
-    // Fallback Order: 1. ApeChain On-Chain RPC -> 2. ApeScan Website -> 3. TrackMyYield.xyz -> 4. Hardcoded Default
+    // Fallback Order: 1. ApeChain on-chain data -> 2. ApeScan Website -> 3. TrackMyYield.xyz -> 4. Hardcoded Default
 
-    // Attempt 1: ApeChain On-Chain RPC (getApy)
+    // Attempt 1: ApeChain on-chain data (getApy)
     try {
       const apyPayload = {
         jsonrpc: '2.0',
@@ -391,7 +391,7 @@ export async function onRequest(context) {
       
       if (calculatedApy > 0 && calculatedApy < 50) { // Reasonable APY range
         statusDetails.apeApy.value = parseFloat(calculatedApy.toFixed(2));
-        statusDetails.apeApy.source = 'ApeChain On-Chain RPC';
+        statusDetails.apeApy.source = 'ApeChain on-chain data';
         statusDetails.apeApy.error = null;
       } else {
         throw new Error(`APY value out of reasonable range from ApeChain getApy: ${calculatedApy}`);
