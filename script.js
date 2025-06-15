@@ -184,16 +184,11 @@ function updateConfigInputs() {
     }
 }
 
-function updateDataStatus(source, timestamp) {
-    if (domElements.dataSourceStatus) domElements.dataSourceStatus.textContent = source;
+function updateDataStatus(timestamp, individualSources = {}) {
     if (domElements.lastUpdatedStatus) domElements.lastUpdatedStatus.textContent = timestamp;
-}
 
-function updateDataSourceList(sources = {}) {
-    if (domElements.sourceApePrice) domElements.sourceApePrice.textContent = `APE Price: ${sources.apePrice || 'N/A'}`;
-    if (domElements.sourceNftStaking) domElements.sourceNftStaking.textContent = `NFT Staking: ${sources.nftStaking || 'N/A'}`;
-    if (domElements.sourceApeApy) domElements.sourceApeApy.textContent = `APE APY: ${sources.apeApy || 'N/A'}`;
-    if (domElements.sourceUsdCny) domElements.sourceUsdCny.textContent = `USD/CNY Rate: ${sources.usdCnyRate || 'N/A'}`;
+    const sourcesString = `APE Price: ${individualSources.apePrice || 'N/A'}, NFT Staking: ${individualSources.nftStaking || 'N/A'}, APY: ${individualSources.apeApy || 'N/A'}, USD/CNY: ${individualSources.usdCnyRate || 'N/A'}`;
+    if (domElements.allSourcesStatus) domElements.allSourcesStatus.textContent = sourcesString;
 }
 
 function updateConfigSourceInfo(sources = {}) {
@@ -350,9 +345,9 @@ async function fetchLiveData() {
                     overallDataSource = 'Fetched Data (Source Info Missing)';
                 }
 
-                updateDataSourceList(data.dataSources);
+                // updateDataSourceList(data.dataSources); // This line is removed
                 updateConfigSourceInfo(data.dataSources);
-                updateDataStatus(overallDataSource, data.timestamp ? new Date(data.timestamp).toLocaleString() : new Date().toLocaleString());
+                updateDataStatus(data.timestamp ? new Date(data.timestamp).toLocaleString() : new Date().toLocaleString(), sources);
                 showNotification('✅ Data updated!', 'success'); // General success message
                 
                 // Auto-calculate if there are existing inputs
@@ -661,7 +656,7 @@ function setupConfigInputListeners() {
                 }
 
                 if (saveDataToLocalStorage(currentData)) {
-                    updateDataStatus('Manual Input', new Date().toLocaleString());
+                    updateDataStatus(new Date().toLocaleString(), currentData.dataSources || { apePrice: 'N/A', nftStaking: 'N/A', apeApy: 'N/A', usdCnyRate: 'N/A' });
                     updateAllDisplays();
                     if (hasCalculationInputs()) calculateRewards();
                 } else {
@@ -733,14 +728,8 @@ function cacheDomElements() {
 
 
     // Data Status
-    domElements.dataSourceStatus = document.getElementById('data-source-status');
     domElements.lastUpdatedStatus = document.getElementById('last-updated-status');
-
-    // Data Source list items
-    domElements.sourceApePrice = document.getElementById('source-ape-price');
-    domElements.sourceNftStaking = document.getElementById('source-nft-staking');
-    domElements.sourceApeApy = document.getElementById('source-ape-apy');
-    domElements.sourceUsdCny = document.getElementById('source-usd-cny');
+    domElements.allSourcesStatus = document.getElementById('all-sources-status');
 
     // Config panel source info
     domElements.configSourceApeApy = document.getElementById('config-source-ape-apy');
@@ -785,14 +774,15 @@ function loadInitialData() {
     const savedData = loadDataFromLocalStorage();
     if (savedData) {
         currentData = savedData;
-        updateDataStatus('Saved Data', 'Loaded from browser storage');
-        updateDataSourceList();
-        updateConfigSourceInfo();
+        const ts = currentData.timestamp ? new Date(currentData.timestamp).toLocaleString() : 'Loaded from cache';
+        updateDataStatus(ts, currentData.dataSources || { apePrice: 'N/A', nftStaking: 'N/A', apeApy: 'N/A', usdCnyRate: 'N/A' });
+        // updateDataSourceList(); // This line is removed
+        updateConfigSourceInfo(currentData.dataSources || {}); // Pass sources to config info
     } else {
         currentData = { ...DEFAULT_DATA }; // Use hardcoded defaults
-        updateDataStatus('Default Values', 'Using system defaults');
-        updateDataSourceList();
-        updateConfigSourceInfo();
+        updateDataStatus('Defaults loaded', { apePrice: 'N/A', nftStaking: 'N/A', apeApy: 'N/A', usdCnyRate: 'N/A' });
+        // updateDataSourceList(); // This line is removed
+        updateConfigSourceInfo({}); // Pass empty sources for defaults
     }
 }
 
