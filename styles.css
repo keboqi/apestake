@@ -1433,3 +1433,10 @@ html {
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }
+
+#all-sources-status {
+    margin-left: 0.5em; /* Add some space between timestamp and sources list */
+    flex-shrink: 1; /* Allow this item to shrink if needed */
+    min-width: 0; /* Allow shrinking below its content size if necessary for flexbox */
+    /* Consider 'word-break: break-word;' if individual source strings are very long without spaces */
+}
